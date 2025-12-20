@@ -2,20 +2,13 @@
 UI 样式与资源
 """
 from PyQt6.QtGui import QColor
+from .color_palette import (
+    BG_COLOR, PANEL_COLOR, BORDER_COLOR, TEXT_COLOR, SUBTLE_TEXT_COLOR,
+    INPUT_BG, BUTTON_BG, BUTTON_HOVER, PRIMARY_ACCENT
+)
 
 def get_main_stylesheet():
     """获取全局样式表"""
-    # --- 深蓝色调色板 ---
-    BG_COLOR = "#0B1120"          # 主背景色
-    PANEL_COLOR = "#1A243A"       # 面板/容器背景色
-    BORDER_COLOR = "#2A3F6C"      # 边框色
-    TEXT_COLOR = "#E0E8FF"        # 主要文字颜色
-    SUBTLE_TEXT_COLOR = "#A0B3D4" # 次要文字颜色
-    INPUT_BG = "#202C48"          # 输入框背景
-    BUTTON_BG = "#3A5FCD"         # 按钮背景
-    BUTTON_HOVER = "#4F75E3"       # 按钮悬停
-    PRIMARY_ACCENT = "#5D8BFF"     # 主高亮/焦点色
-
     return f"""
         QMainWindow {{
             background-color: {BG_COLOR};
@@ -77,6 +70,83 @@ def get_main_stylesheet():
         QStatusBar {{
             background-color: {PANEL_COLOR};
             color: {SUBTLE_TEXT_COLOR};
+        }}
+        QTextEdit {{
+            background-color: {INPUT_BG};
+            color: {TEXT_COLOR};
+            border: 2px solid {BORDER_COLOR};
+            border-radius: 6px;
+            padding: 8px;
+            font-family: Consolas, monospace;
+        }}
+        QTabWidget::pane {{
+            border: none;
+            border-top: 3px solid {BORDER_COLOR};
+        }}
+        QTabBar::tab {{
+            background-color: {BG_COLOR};
+            color: {SUBTLE_TEXT_COLOR};
+            padding: 10px 25px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            font-weight: bold;
+            min-width: 120px;
+            border-bottom: 3px solid transparent; /* Reserve space for the border */
+            margin-bottom: -3px; /* Pull tab down to overlap the pane border */
+        }}
+        QTabBar::tab:hover {{
+            background-color: {INPUT_BG};
+            color: {TEXT_COLOR};
+        }}
+        QTabBar::tab:selected {{
+            background-color: {PANEL_COLOR}; /* Make it look connected to the content */
+            color: {PRIMARY_ACCENT};
+            border-bottom: 3px solid {PANEL_COLOR}; /* Cover the pane's border */
+        }}
+        QComboBox {{
+            background-color: {INPUT_BG};
+            color: {TEXT_COLOR};
+            border: 2px solid {BORDER_COLOR};
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 12px;
+            selection-background-color: {PRIMARY_ACCENT};
+        }}
+        QComboBox:hover {{
+            border: 2px solid {PRIMARY_ACCENT};
+        }}
+        QComboBox::drop-down {{
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 25px;
+            border-left-width: 1px;
+            border-left-color: {BORDER_COLOR};
+            border-left-style: solid;
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }}
+        QComboBox QAbstractItemView {{
+            background-color: {INPUT_BG};
+            color: {TEXT_COLOR};
+            border: 2px solid {BORDER_COLOR};
+            selection-background-color: {PRIMARY_ACCENT};
+        }}
+        QScrollBar:vertical {{
+            border: none;
+            background: {BG_COLOR};
+            width: 12px;
+            margin: 0px 0px 0px 0px;
+        }}
+        QScrollBar::handle:vertical {{
+            background: {BORDER_COLOR};
+            min-height: 20px;
+            border-radius: 6px;
+        }}
+        QScrollBar::handle:vertical:hover {{
+            background: {PRIMARY_ACCENT};
+        }}
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+            height: 0px;
         }}
     """
 
