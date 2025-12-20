@@ -1,77 +1,70 @@
 """
 UI 样式与资源
 """
-from PyQt6.QtGui import QColor
+from . import color_palette as cp
 
 def get_main_stylesheet():
     """获取全局样式表"""
-    return """
-        QMainWindow {
-            background-color: #0f172a;
-        }
-        QGroupBox {
-            color: #f1f5f9;
-            border: 2px solid #334155;
+    return f"""
+        QMainWindow {{
+            background-color: {cp.BG_COLOR};
+        }}
+        QGroupBox {{
+            color: {cp.TEXT_COLOR};
+            border: 2px solid {cp.BORDER_COLOR};
             border-radius: 10px;
             margin-top: 8px;
             padding-top: 18px;
-            background-color: #1e293b;
+            background-color: {cp.PANEL_COLOR};
             font-size: 14px;
-        }
-        QGroupBox::title {
+        }}
+        QGroupBox::title {{
             subcontrol-origin: margin;
             left: 20px;
             padding: 0 8px;
-            background-color: #1e293b;
-        }
-        QLabel {
-            color: #cbd5e1;
+            background-color: {cp.PANEL_COLOR};
+        }}
+        QLabel {{
+            color: {cp.SUBTLE_TEXT_COLOR};
             font-size: 13px;
-        }
-        QLineEdit {
-            background-color: #334155;
-            color: #f1f5f9;
-            border: 2px solid #475569;
+        }}
+        QLineEdit {{
+            background-color: {cp.INPUT_BG};
+            color: {cp.TEXT_COLOR};
+            border: 2px solid {cp.BORDER_COLOR};
             border-radius: 6px;
             padding: 8px;
             font-size: 12px;
-            selection-background-color: #6366f1;
-        }
-        QLineEdit:focus {
-            border: 2px solid #6366f1;
-            background-color: #3f4d63;
-        }
-        QLineEdit::placeholder {
-            color: #64748b;
-        }
-        QPushButton {
-            background-color: #475569;
+            selection-background-color: {cp.PRIMARY_ACCENT};
+        }}
+        QLineEdit:focus {{
+            border: 2px solid {cp.PRIMARY_ACCENT};
+            background-color: {cp.INPUT_BG};
+        }}
+        QLineEdit::placeholder {{
+            color: {cp.SUBTLE_TEXT_COLOR};
+        }}
+        QPushButton {{
+            background-color: {cp.BUTTON_BG};
             color: white;
             border: none;
             border-radius: 6px;
             padding: 10px;
             font-size: 12px;
             font-weight: bold;
-        }
-        QPushButton:hover {
-            background-color: #64748b;
-        }
-        QPushButton:pressed {
-            background-color: #334155;
-        }
-        QPushButton:disabled {
-            background-color: #334155;
-            color: #64748b;
-        }
-        QStatusBar {
-            background-color: #1e293b;
-            color: #cbd5e1;
-        }
+        }}
+        QPushButton:hover {{
+            background-color: {cp.BUTTON_HOVER};
+        }}
+        QPushButton:pressed {{
+            background-color: {cp.INPUT_BG};
+        }}
+        QPushButton:disabled {{
+            background-color: {cp.INPUT_BG};
+            color: {cp.SUBTLE_TEXT_COLOR};
+        }}
+        QStatusBar {{
+            background-color: {cp.PANEL_COLOR};
+            color: {cp.SUBTLE_TEXT_COLOR};
+        }}
     """
-
-def darken_color(hex_color, amount=20):
-    """使颜色变暗"""
-    color = QColor(hex_color)
-    h, s, l, a = color.getHsl()
-    color.setHsl(h, s, max(0, l - amount), a)
-    return color.name()
