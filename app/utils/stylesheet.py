@@ -71,6 +71,36 @@ def get_main_stylesheet():
             background-color: {PANEL_COLOR};
             color: {SUBTLE_TEXT_COLOR};
         }}
+        QTextEdit {{
+            background-color: {INPUT_BG};
+            color: {TEXT_COLOR};
+            border: 2px solid {BORDER_COLOR};
+            border-radius: 6px;
+            padding: 8px;
+            font-family: Consolas, monospace;
+        }}
+        QTabWidget::pane {{
+            border: none;
+            border-top: 3px solid {BORDER_COLOR};
+        }}
+        QTabBar::tab {{
+            background-color: {PANEL_COLOR};
+            color: {SUBTLE_TEXT_COLOR};
+            padding: 10px 25px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            font-weight: bold;
+            min-width: 120px;
+        }}
+        QTabBar::tab:hover {{
+            background-color: {INPUT_BG};
+            color: {TEXT_COLOR};
+        }}
+        QTabBar::tab:selected {{
+            background-color: {BG_COLOR};
+            color: {TEXT_COLOR};
+            border-bottom: 3px solid {PRIMARY_ACCENT};
+        }}
     """
 
 def darken_color(hex_color, amount=20):
