@@ -2,13 +2,20 @@
 UI 样式与资源
 """
 from PyQt6.QtGui import QColor
-from .color_palette import (
-    BG_COLOR, PANEL_COLOR, BORDER_COLOR, TEXT_COLOR, SUBTLE_TEXT_COLOR,
-    INPUT_BG, BUTTON_BG, BUTTON_HOVER, PRIMARY_ACCENT
-)
 
 def get_main_stylesheet():
     """获取全局样式表"""
+    # --- 深蓝色调色板 ---
+    BG_COLOR = "#0B1120"          # 主背景色
+    PANEL_COLOR = "#1A243A"       # 面板/容器背景色
+    BORDER_COLOR = "#2A3F6C"      # 边框色
+    TEXT_COLOR = "#E0E8FF"        # 主要文字颜色
+    SUBTLE_TEXT_COLOR = "#A0B3D4" # 次要文字颜色
+    INPUT_BG = "#202C48"          # 输入框背景
+    BUTTON_BG = "#3A5FCD"         # 按钮背景
+    BUTTON_HOVER = "#4F75E3"       # 按钮悬停
+    PRIMARY_ACCENT = "#5D8BFF"     # 主高亮/焦点色
+
     return f"""
         QMainWindow {{
             background-color: {BG_COLOR};

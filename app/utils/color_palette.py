@@ -11,8 +11,8 @@ INFO_ACCENT = "#3b82f6"
 
 # --- 界面元素颜色 ---
 BG_COLOR = "#0B1120"
-PANEL_COLOR = "#1A243A"
-BORDER_COLOR = "#2A3F6C"
+PANEL_COLOR = "#1C2A4A" # Toned up to be more blue
+BORDER_COLOR = "#3A5FCD" # Using a more vibrant blue for borders
 INPUT_BG = "#202C48"
 
 # --- 文本颜色 ---

@@ -11,11 +11,20 @@ from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QFont, QColor, QTextCursor
 
 from app.utils.stylesheet import get_main_stylesheet, darken_color
-from app.utils.color_palette import (
-    PRIMARY_ACCENT, SUCCESS_ACCENT, WARNING_ACCENT, DANGER_ACCENT,
-    INFO_ACCENT, INPUT_BG, SUBTLE_TEXT_COLOR, TEXT_COLOR,
-    GRADIENT_START, GRADIENT_END
-)
+
+# --- UI 内联颜色定义 ---
+# 使用与 stylesheet.py 中一致或互补的颜色
+PRIMARY_ACCENT = "#5D8BFF"
+SUCCESS_ACCENT = "#14b8a6"
+WARNING_ACCENT = "#f59e0b"
+DANGER_ACCENT = "#ef4444"
+INFO_ACCENT = "#3b82f6"
+PANEL_COLOR = "#1A243A"
+INPUT_BG = "#202C48"
+SUBTLE_TEXT_COLOR = "#A0B3D4"
+TEXT_COLOR = "#E0E8FF"
+GRADIENT_START = "#3A5FCD"
+GRADIENT_END = "#5D8BFF"
 
 class GitHubManager(QMainWindow):
     """GitHub仓库智能管理器 - 主窗口 (纯UI)"""
