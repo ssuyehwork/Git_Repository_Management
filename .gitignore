@@ -1,0 +1,10 @@
+*
+!*/
+!.gitignore
+!*.py
+!*.md
+*.json
+
+# 忽略已编译的 Python 文件
+__pycache__/
+*.pyc
