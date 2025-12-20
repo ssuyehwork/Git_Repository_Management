@@ -252,7 +252,7 @@ class GitHubManager(QMainWindow):
 
     def _add_path_row(self, layout, row, label, edit_widget, btn_key, is_source=False):
         lbl = QLabel(label)
-        lbl.setAlignment(Qt.AlignRight)
+        lbl.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         if not hasattr(self, 'path_buttons'):
             self.path_buttons = {}
