@@ -11,6 +11,11 @@ from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QFont, QColor, QTextCursor
 
 from app.utils.stylesheet import get_main_stylesheet, darken_color
+from app.utils.color_palette import (
+    PRIMARY_ACCENT, SUCCESS_ACCENT, WARNING_ACCENT, DANGER_ACCENT,
+    INFO_ACCENT, INPUT_BG, SUBTLE_TEXT_COLOR, TEXT_COLOR,
+    GRADIENT_START, GRADIENT_END
+)
 
 class GitHubManager(QMainWindow):
     """GitHub仓库智能管理器 - 主窗口 (纯UI)"""
@@ -58,7 +63,7 @@ class GitHubManager(QMainWindow):
         layout.addWidget(self.progress_bar)
         
         self.statusBar().showMessage("就绪")
-        self.statusBar().setStyleSheet("color: #10b981; font-weight: bold;")
+        self.statusBar().setStyleSheet(f"color: {SUCCESS_ACCENT}; font-weight: bold;")
     
     # --- Git 管理标签页 UI ---
     def _create_git_tab_ui(self, parent_widget):
@@ -103,27 +108,27 @@ class GitHubManager(QMainWindow):
     def _create_title_widget(self):
         """创建标题区域"""
         widget = QWidget()
-        widget.setStyleSheet("""
-            QWidget {
+        widget.setStyleSheet(f"""
+            QWidget {{
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #6366f1, stop:1 #8b5cf6);
+                    stop:0 {GRADIENT_START}, stop:1 {GRADIENT_END});
                 border-radius: 10px;
                 padding: 12px;
-            }
+            }}
         """)
         
         layout = QHBoxLayout(widget)
         
         title = QLabel("🚀 智能开发工具套件")
         title.setFont(QFont("Arial", 20, QFont.Weight.Bold))
-        title.setStyleSheet("color: white;")
+        title.setStyleSheet("color: white; background: transparent;")
         layout.addWidget(title)
         
         layout.addStretch()
         
         version = QLabel("v3.0 Integrated")
         version.setFont(QFont("Arial", 10))
-        version.setStyleSheet("color: rgba(255,255,255,0.8);")
+        version.setStyleSheet("color: rgba(255,255,255,0.8); background: transparent;")
         layout.addWidget(version)
         
         return widget
@@ -169,10 +174,10 @@ class GitHubManager(QMainWindow):
         group.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         layout = QGridLayout(group)
         
-        self.branch_label = self._create_status_label("🌿 分支", "--", "#10b981")
-        self.uncommitted_label = self._create_status_label("📝 未提交", "--", "#f59e0b")
-        self.unpushed_label = self._create_status_label("📤 未推送", "--", "#3b82f6")
-        self.sync_label = self._create_status_label("🔗 状态", "--", "#8b5cf6")
+        self.branch_label = self._create_status_label("🌿 分支", "--", SUCCESS_ACCENT)
+        self.uncommitted_label = self._create_status_label("📝 未提交", "--", WARNING_ACCENT)
+        self.unpushed_label = self._create_status_label("📤 未推送", "--", INFO_ACCENT)
+        self.sync_label = self._create_status_label("🔗 状态", "--", PRIMARY_ACCENT)
         
         layout.addWidget(self.branch_label, 0, 0)
         layout.addWidget(self.uncommitted_label, 0, 1)
@@ -187,12 +192,12 @@ class GitHubManager(QMainWindow):
         layout = QGridLayout(group)
         
         operations = [
-            ("upload", "📤 智能上传", "#10b981"),
-            ("download", "📥 智能下载", "#3b82f6"),
-            ("sync", "🔄 智能同步", "#8b5cf6"),
-            ("overwrite", "⚡ 强制覆盖", "#f59e0b"),
-            ("delete", "🗑 清理远程", "#ef4444"),
-            ("init", "🔧 初始化", "#06b6d4"),
+            ("upload", "📤 智能上传", SUCCESS_ACCENT),
+            ("download", "📥 智能下载", INFO_ACCENT),
+            ("sync", "🔄 智能同步", PRIMARY_ACCENT),
+            ("overwrite", "⚡ 强制覆盖", WARNING_ACCENT),
+            ("delete", "🗑 清理远程", DANGER_ACCENT),
+            ("init", "🔧 初始化", "#0891b2"), # Teal color, distinct from others
         ]
         
         self.operation_buttons = {}
@@ -281,12 +286,18 @@ class GitHubManager(QMainWindow):
     # --- 公共/辅助 UI 创建函数 ---
     def _create_status_label(self, title, value, color):
         widget = QWidget()
-        widget.setStyleSheet(f"background-color: #1f2937; border-left: 3px solid {color}; border-radius: 5px; padding: 6px;")
+        widget.setStyleSheet(f"background-color: {INPUT_BG}; border-left: 3px solid {color}; border-radius: 5px; padding: 6px;")
         layout = QVBoxLayout(widget)
+        layout.setSpacing(2)
+        layout.setContentsMargins(8, 4, 8, 4)
+
         title_label = QLabel(title)
+        title_label.setStyleSheet("background: transparent; border: none;")
+
         value_label = QLabel(value)
         value_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         value_label.setStyleSheet(f"color: {color}; border: none; background: transparent;")
+
         widget.value_label = value_label
         layout.addWidget(title_label)
         layout.addWidget(value_label)
@@ -317,9 +328,20 @@ class GitHubManager(QMainWindow):
     def _create_progress_bar(self):
         progress_bar = QProgressBar()
         progress_bar.setVisible(False)
-        progress_bar.setStyleSheet("""
-            QProgressBar { border: 2px solid #6366f1; border-radius: 8px; text-align: center; height: 30px; background-color: #1f2937; color: white; }
-            QProgressBar::chunk { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6366f1, stop:1 #8b5cf6); border-radius: 6px; }
+        progress_bar.setStyleSheet(f"""
+            QProgressBar {{
+                border: 2px solid {PRIMARY_ACCENT};
+                border-radius: 8px;
+                text-align: center;
+                height: 30px;
+                background-color: {INPUT_BG};
+                color: white;
+            }}
+            QProgressBar::chunk {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 {GRADIENT_START}, stop:1 {GRADIENT_END});
+                border-radius: 6px;
+            }}
         """)
         return progress_bar
 
@@ -339,8 +361,8 @@ class GitHubManager(QMainWindow):
         self.git_email_input.setText(config.get('email', ''))
 
     def log(self, message, is_error=False):
-        timestamp = QColor("#64748b")
-        msg_color = QColor("#ef4444") if is_error else QColor("#e2e8f0")
+        timestamp = QColor(SUBTLE_TEXT_COLOR)
+        msg_color = QColor(DANGER_ACCENT) if is_error else QColor(TEXT_COLOR)
         
         cursor = self.log_text.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
