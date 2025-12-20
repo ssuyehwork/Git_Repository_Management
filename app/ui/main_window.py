@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QFont, QColor, QTextCursor
 
-from app.utils.stylesheet import get_main_stylesheet, darken_color
+from app.utils.stylesheet import get_main_stylesheet
 
 class GitHubManager(QMainWindow):
     """GitHub仓库智能管理器 - 主窗口 (纯UI)"""
@@ -197,7 +197,7 @@ class GitHubManager(QMainWindow):
         
         self.operation_buttons = {}
         for i, (op_name, text, color) in enumerate(operations):
-            btn = self._create_operation_button(text, color)
+            btn = self._create_operation_button(text, op_name)
             layout.addWidget(btn, i // 3, i % 3)
             self.operation_buttons[op_name] = btn
         
@@ -292,14 +292,11 @@ class GitHubManager(QMainWindow):
         layout.addWidget(value_label)
         return widget
     
-    def _create_operation_button(self, text, color):
+    def _create_operation_button(self, text, role):
         btn = QPushButton(text)
         btn.setMinimumHeight(48)
         btn.setFont(QFont("Arial", 11, QFont.Weight.Bold))
-        btn.setStyleSheet(f"""
-            QPushButton {{ background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 {color}, stop:1 {darken_color(color)}); color: white; border-radius: 7px; }}
-            QPushButton:hover {{ background: {darken_color(color)}; }}
-        """)
+        btn.setProperty("role", role)
         return btn
 
     def _create_log_group(self):

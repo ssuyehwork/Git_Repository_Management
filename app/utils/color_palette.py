@@ -11,8 +11,8 @@ INFO_ACCENT = "#3b82f6"
 
 # --- 界面元素颜色 ---
 BG_COLOR = "#0B1120"
-PANEL_COLOR = "#1C2A4A" # Toned up to be more blue
-BORDER_COLOR = "#3A5FCD" # Using a more vibrant blue for borders
+PANEL_COLOR = "#1C2A4A"
+BORDER_COLOR = "#3A5FCD"
 INPUT_BG = "#202C48"
 
 # --- 文本颜色 ---
@@ -23,6 +23,20 @@ SUBTLE_TEXT_COLOR = "#A0B3D4"
 BUTTON_BG = "#3A5FCD"
 BUTTON_HOVER = "#4F75E3"
 
-# --- 渐变色 ---
-GRADIENT_START = "#3A5FCD"
-GRADIENT_END = "#5D8BFF"
+# --- 按钮特殊颜色 ---
+UPLOAD_BG = "#14b8a6"
+UPLOAD_HOVER = "#10a998"
+DOWNLOAD_BG = "#3b82f6"
+DOWNLOAD_HOVER = "#3575dd"
+SYNC_BG = "#8b5cf6"
+SYNC_HOVER = "#7c53dd"
+OVERWRITE_BG = "#f59e0b"
+OVERWRITE_HOVER = "#da8d0a"
+DELETE_BG = "#ef4444"
+DELETE_HOVER = "#d63d3d"
+INIT_BG = "#06b6d4"
+INIT_HOVER = "#05a5c1"
+PRIMARY_BUTTON_BG = "#6366f1"
+PRIMARY_BUTTON_HOVER = "#585af0"
+DANGER_BUTTON_BG = "#ef4444"
+DANGER_BUTTON_HOVER = "#d63d3d"
