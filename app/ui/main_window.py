@@ -7,8 +7,8 @@ from PyQt6.QtWidgets import (
     QGridLayout, QProgressBar, QInputDialog, QTabWidget,
     QFileDialog, QComboBox, QFrame
 )
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtCore import Qt, QTime
+from PyQt6.QtGui import QFont, QColor, QTextCursor
 
 from app.utils.stylesheet import get_main_stylesheet, darken_color
 
@@ -348,7 +348,7 @@ class GitHubManager(QMainWindow):
         time_format = cursor.charFormat()
         time_format.setForeground(timestamp)
         cursor.setCharFormat(time_format)
-        cursor.insertText(f"[{QColor.currentTime().toString('HH:mm:ss')}] ")
+        cursor.insertText(f"[{QTime.currentTime().toString('HH:mm:ss')}] ")
 
         msg_format = cursor.charFormat()
         msg_format.setForeground(msg_color)
