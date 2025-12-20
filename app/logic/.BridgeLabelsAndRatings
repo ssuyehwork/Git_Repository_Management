@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<bridgedata version='1'>
+	<labels version='1'>
+		<item key='app_logic.py' label='第二'/>
+		<item key='git_worker.py' label='第二'/>
+	</labels>
+</bridgedata>

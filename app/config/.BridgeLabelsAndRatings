@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<bridgedata version='1'>
+	<labels version='1'>
+		<item key='storage.py' label='第二'/>
+		<item key='constants.py' label='第二'/>
+		<item key='config_manager.py' label='第二'/>
+	</labels>
+</bridgedata>
