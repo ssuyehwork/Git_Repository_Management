@@ -11,6 +11,7 @@ from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QFont, QColor, QTextCursor
 
 from app.utils.stylesheet import get_main_stylesheet, darken_color
+from app.config import constants
 
 class GitHubManager(QMainWindow):
     """GitHub仓库智能管理器 - 主窗口 (纯UI)"""
@@ -22,7 +23,7 @@ class GitHubManager(QMainWindow):
 
     def init_ui(self):
         """初始化用户界面"""
-        self.setWindowTitle("智能开发工具套件 v3.0")
+        self.setWindowTitle(f"{constants.APP_NAME} {constants.APP_VERSION}")
         self.setGeometry(100, 100, 1100, 800)
         self.setStyleSheet(get_main_stylesheet())
 
@@ -154,11 +155,10 @@ class GitHubManager(QMainWindow):
         layout.addWidget(self.git_email_input, 3, 1, 1, 2)
 
         button_layout = QHBoxLayout()
-        self.git_load_config_btn = QPushButton("📂 加载配置")
-        self.git_save_config_btn = QPushButton("💾 保存配置为...")
+        self.git_save_settings_btn = QPushButton("💾 保存设置")
         self.git_refresh_btn = QPushButton("🔄 刷新状态")
-        button_layout.addWidget(self.git_load_config_btn)
-        button_layout.addWidget(self.git_save_config_btn)
+        button_layout.addStretch()
+        button_layout.addWidget(self.git_save_settings_btn)
         button_layout.addWidget(self.git_refresh_btn)
         layout.addLayout(button_layout, 4, 0, 1, 3)
 
