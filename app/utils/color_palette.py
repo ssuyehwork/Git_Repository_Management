@@ -3,10 +3,11 @@
 """
 
 # --- 主题色调 ---
-PRIMARY_ACCENT = "#5D8BFF"
+PRIMARY_ACCENT = "#6699FF"
 SUCCESS_ACCENT = "#14b8a6"
 WARNING_ACCENT = "#f59e0b"
 DANGER_ACCENT = "#ef4444"
+DANGER_HOVER_ACCENT = "#d83a3a"
 INFO_ACCENT = "#3b82f6"
 
 # --- 界面元素颜色 ---
