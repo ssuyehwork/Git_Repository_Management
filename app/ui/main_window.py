@@ -37,7 +37,7 @@ class GitHubManager(QMainWindow):
 
         # 创建标签页
         tab_widget = QTabWidget()
-        layout.addWidget(tab_widget)
+        layout.addWidget(tab_widget, 1) # 分配 1 份伸展空间
 
         # 创建各个功能页
         git_tab = QWidget()
@@ -52,7 +52,7 @@ class GitHubManager(QMainWindow):
         
         # 公共日志和进度条区域
         log_group = self._create_log_group()
-        layout.addWidget(log_group)
+        layout.addWidget(log_group, 2) # 分配 2 份伸展空间
         
         self.progress_bar = self._create_progress_bar()
         layout.addWidget(self.progress_bar)
@@ -75,8 +75,6 @@ class GitHubManager(QMainWindow):
         operations_group = self._create_operations_group()
         layout.addWidget(operations_group)
 
-        layout.addStretch() # 添加弹性空间
-
     # --- 文件同步标签页 UI ---
     def _create_sync_tab_ui(self, parent_widget):
         layout = QVBoxLayout(parent_widget)
@@ -97,8 +95,6 @@ class GitHubManager(QMainWindow):
         self.sync_start_btn.setFixedWidth(140)
         act_layout.addWidget(self.sync_start_btn)
         layout.addLayout(act_layout)
-
-        layout.addStretch()
 
     def _create_title_widget(self):
         """创建标题区域"""
