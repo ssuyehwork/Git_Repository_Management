@@ -75,6 +75,8 @@ class GitHubManager(QMainWindow):
         operations_group = self._create_operations_group()
         layout.addWidget(operations_group)
 
+        layout.addStretch() # 添加弹性空间
+
     # --- 文件同步标签页 UI ---
     def _create_sync_tab_ui(self, parent_widget):
         layout = QVBoxLayout(parent_widget)
@@ -95,6 +97,8 @@ class GitHubManager(QMainWindow):
         self.sync_start_btn.setFixedWidth(140)
         act_layout.addWidget(self.sync_start_btn)
         layout.addLayout(act_layout)
+
+        layout.addStretch()
 
     def _create_title_widget(self):
         """创建标题区域"""
