@@ -14,7 +14,9 @@ from app.utils.stylesheet import get_main_stylesheet
 from app.utils.color_palette import (
     PRIMARY_ACCENT, SUCCESS_ACCENT, WARNING_ACCENT, DANGER_ACCENT,
     INFO_ACCENT, INPUT_BG, SUBTLE_TEXT_COLOR, TEXT_COLOR,
-    GRADIENT_START, GRADIENT_END, OP_BUTTON_GRADIENT_END, TEAL_ACCENT
+    GRADIENT_START, GRADIENT_END, SUCCESS_GRADIENT_END, INFO_GRADIENT_END,
+    PRIMARY_GRADIENT_END, WARNING_GRADIENT_END, DANGER_GRADIENT_END,
+    TEAL_GRADIENT_END, TEAL_ACCENT, WHITE
 )
 
 class GitHubManager(QMainWindow):
@@ -192,17 +194,17 @@ class GitHubManager(QMainWindow):
         layout = QGridLayout(group)
         
         operations = [
-            ("upload", "📤 智能上传", SUCCESS_ACCENT),
-            ("download", "📥 智能下载", INFO_ACCENT),
-            ("sync", "🔄 智能同步", PRIMARY_ACCENT),
-            ("overwrite", "⚡ 强制覆盖", WARNING_ACCENT),
-            ("delete", "🗑 清理远程", DANGER_ACCENT),
-            ("init", "🔧 初始化", TEAL_ACCENT),
+            ("upload", "📤 智能上传", SUCCESS_ACCENT, SUCCESS_GRADIENT_END),
+            ("download", "📥 智能下载", INFO_ACCENT, INFO_GRADIENT_END),
+            ("sync", "🔄 智能同步", PRIMARY_ACCENT, PRIMARY_GRADIENT_END),
+            ("overwrite", "⚡ 强制覆盖", WARNING_ACCENT, WARNING_GRADIENT_END),
+            ("delete", "🗑 清理远程", DANGER_ACCENT, DANGER_GRADIENT_END),
+            ("init", "🔧 初始化", TEAL_ACCENT, TEAL_GRADIENT_END),
         ]
         
         self.operation_buttons = {}
-        for i, (op_name, text, color) in enumerate(operations):
-            btn = self._create_operation_button(text, color)
+        for i, (op_name, text, color, grad_end) in enumerate(operations):
+            btn = self._create_operation_button(text, color, grad_end)
             layout.addWidget(btn, i // 3, i % 3)
             self.operation_buttons[op_name] = btn
         
@@ -303,18 +305,25 @@ class GitHubManager(QMainWindow):
         layout.addWidget(value_label)
         return widget
     
-    def _create_operation_button(self, text, color):
+    def _create_operation_button(self, text, color, grad_end):
         btn = QPushButton(text)
-        btn.setMinimumHeight(48)
-        btn.setFont(QFont("Arial", 11, QFont.Weight.Bold))
+        btn.setMinimumHeight(60)
+        btn.setFont(QFont("Microsoft YaHei", 12, QFont.Weight.Bold))
+
         btn.setStyleSheet(f"""
             QPushButton {{
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 {color}, stop:1 {OP_BUTTON_GRADIENT_END});
-                color: white;
-                border-radius: 7px;
+                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 {color}, stop:1 {grad_end});
+                color: {WHITE};
+                border: 1px solid {color};
+                border-radius: 8px;
+                padding: 10px;
             }}
             QPushButton:hover {{
-                background: {OP_BUTTON_GRADIENT_END};
+                background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 {grad_end}, stop:1 {color});
+            }}
+            QPushButton:pressed {{
+                background-color: {grad_end};
+                border: 1px solid {grad_end};
             }}
         """)
         return btn
