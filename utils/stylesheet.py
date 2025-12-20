@@ -4,7 +4,8 @@ UI 样式与资源
 from PyQt6.QtGui import QColor
 from .color_palette import (
     BG_COLOR, PANEL_COLOR, BORDER_COLOR, TEXT_COLOR, SUBTLE_TEXT_COLOR,
-    INPUT_BG, BUTTON_BG, BUTTON_HOVER, PRIMARY_ACCENT
+    INPUT_BG, BUTTON_BG, BUTTON_HOVER, PRIMARY_ACCENT, DANGER_ACCENT,
+    DANGER_HOVER_ACCENT
 )
 
 def get_main_stylesheet():
@@ -66,6 +67,19 @@ def get_main_stylesheet():
         QPushButton:disabled {{
             background-color: {BORDER_COLOR};
             color: {SUBTLE_TEXT_COLOR};
+        }}
+        QPushButton[role="primary"] {{
+            background-color: {PRIMARY_ACCENT};
+        }}
+        QPushButton[role="primary"]:hover {{
+            background-color: {BUTTON_HOVER};
+        }}
+        QPushButton[role="danger"] {{
+            background-color: {DANGER_ACCENT};
+            color: white;
+        }}
+        QPushButton[role="danger"]:hover {{
+            background-color: {DANGER_HOVER_ACCENT};
         }}
         QStatusBar {{
             background-color: {PANEL_COLOR};
@@ -149,10 +163,3 @@ def get_main_stylesheet():
             height: 0px;
         }}
     """
-
-def darken_color(hex_color, amount=20):
-    """使颜色变暗"""
-    color = QColor(hex_color)
-    h, s, l, a = color.getHsl()
-    color.setHsl(h, s, max(0, l - amount), a)
-    return color.name()
