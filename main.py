@@ -16,8 +16,15 @@ from app.logic.app_logic import AppLogic
 def set_dark_theme(app):
     """设置暗色主题"""
     palette = QPalette()
-    palette.setColor(QPalette.ColorRole.Window, QColor(15, 23, 42))
-    # ... (其他颜色设置保持不变)
+    palette.setColor(QPalette.ColorRole.Window, QColor("#1e293b"))
+    palette.setColor(QPalette.ColorRole.WindowText, QColor("#f1f5f9"))
+    palette.setColor(QPalette.ColorRole.Base, QColor("#2b3a55"))
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor("#334155"))
+    palette.setColor(QPalette.ColorRole.Text, QColor("#f1f5f9"))
+    palette.setColor(QPalette.ColorRole.Button, QColor("#4a5568"))
+    palette.setColor(QPalette.ColorRole.ButtonText, QColor("#ffffff"))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor("#6366f1"))
+    palette.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
     app.setPalette(palette)
 
 def main():
@@ -35,9 +42,8 @@ def main():
     if not is_first:
         SingleInstanceManager.notify_existing_instance_to_exit()
         time.sleep(0.5)
-        # 再次尝试抢占（后例接管模式）
         if not instance_manager.try_start_server():
-            sys.exit(0) # 如果仍然失败，则退出
+            sys.exit(0)
 
     app.setStyle('Fusion')
     set_dark_theme(app)

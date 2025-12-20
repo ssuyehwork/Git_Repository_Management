@@ -14,7 +14,7 @@ def create_splash_screen():
     painter.setPen(QColor(99, 102, 241))
     painter.setFont(QFont("Arial", 28, QFont.Weight.Bold))
     painter.drawText(splash_pix.rect(), Qt.AlignmentFlag.AlignCenter,
-                    "GitHub 仓库智能管理器\n\nv2.0 Professional")
+                    "智能开发工具套件\n\nv3.0 Integrated")
     painter.end()
 
     splash = QSplashScreen(splash_pix)
