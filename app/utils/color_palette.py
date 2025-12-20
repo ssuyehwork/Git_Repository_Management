@@ -9,6 +9,7 @@ WARNING_ACCENT = "#f59e0b"
 DANGER_ACCENT = "#ef4444"
 DANGER_HOVER_ACCENT = "#d83a3a"
 INFO_ACCENT = "#3b82f6"
+TEAL_ACCENT = "#0891b2"
 
 # --- 界面元素颜色 ---
 BG_COLOR = "#0B1120"
@@ -27,3 +28,6 @@ BUTTON_HOVER = "#4F75E3"
 # --- 渐变色 ---
 GRADIENT_START = "#3A5FCD"
 GRADIENT_END = "#5D8BFF"
+
+# --- 操作按钮渐变色 ---
+OP_BUTTON_GRADIENT_END = "#4F75E3"

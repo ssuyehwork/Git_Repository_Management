@@ -10,11 +10,11 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QFont, QColor, QTextCursor
 
-from app.utils.stylesheet import get_main_stylesheet, darken_color
+from app.utils.stylesheet import get_main_stylesheet
 from app.utils.color_palette import (
     PRIMARY_ACCENT, SUCCESS_ACCENT, WARNING_ACCENT, DANGER_ACCENT,
     INFO_ACCENT, INPUT_BG, SUBTLE_TEXT_COLOR, TEXT_COLOR,
-    GRADIENT_START, GRADIENT_END
+    GRADIENT_START, GRADIENT_END, OP_BUTTON_GRADIENT_END, TEAL_ACCENT
 )
 
 class GitHubManager(QMainWindow):
@@ -197,7 +197,7 @@ class GitHubManager(QMainWindow):
             ("sync", "🔄 智能同步", PRIMARY_ACCENT),
             ("overwrite", "⚡ 强制覆盖", WARNING_ACCENT),
             ("delete", "🗑 清理远程", DANGER_ACCENT),
-            ("init", "🔧 初始化", "#0891b2"), # Teal color, distinct from others
+            ("init", "🔧 初始化", TEAL_ACCENT),
         ]
         
         self.operation_buttons = {}
@@ -308,8 +308,14 @@ class GitHubManager(QMainWindow):
         btn.setMinimumHeight(48)
         btn.setFont(QFont("Arial", 11, QFont.Weight.Bold))
         btn.setStyleSheet(f"""
-            QPushButton {{ background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 {color}, stop:1 {darken_color(color)}); color: white; border-radius: 7px; }}
-            QPushButton:hover {{ background: {darken_color(color)}; }}
+            QPushButton {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 {color}, stop:1 {OP_BUTTON_GRADIENT_END});
+                color: white;
+                border-radius: 7px;
+            }}
+            QPushButton:hover {{
+                background: {OP_BUTTON_GRADIENT_END};
+            }}
         """)
         return btn
 
