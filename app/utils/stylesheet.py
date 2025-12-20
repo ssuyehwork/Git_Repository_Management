@@ -84,22 +84,24 @@ def get_main_stylesheet():
             border-top: 3px solid {BORDER_COLOR};
         }}
         QTabBar::tab {{
-            background-color: {PANEL_COLOR};
+            background-color: {BG_COLOR};
             color: {SUBTLE_TEXT_COLOR};
             padding: 10px 25px;
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
             font-weight: bold;
             min-width: 120px;
+            border-bottom: 3px solid transparent; /* Reserve space for the border */
+            margin-bottom: -3px; /* Pull tab down to overlap the pane border */
         }}
         QTabBar::tab:hover {{
             background-color: {INPUT_BG};
             color: {TEXT_COLOR};
         }}
         QTabBar::tab:selected {{
-            background-color: {BG_COLOR};
-            color: {TEXT_COLOR};
-            border-bottom: 3px solid {PRIMARY_ACCENT};
+            background-color: {PANEL_COLOR}; /* Make it look connected to the content */
+            color: {PRIMARY_ACCENT};
+            border-bottom: 3px solid {PANEL_COLOR}; /* Cover the pane's border */
         }}
     """
 
