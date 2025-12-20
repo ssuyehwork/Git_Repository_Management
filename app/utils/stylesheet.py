@@ -163,3 +163,10 @@ def get_main_stylesheet():
             height: 0px;
         }}
     """
+
+def darken_color(hex_color, amount=20):
+    """使颜色变暗"""
+    color = QColor(hex_color)
+    h, s, l, a = color.getHsl()
+    color.setHsl(h, s, max(0, l - amount), a)
+    return color.name()
