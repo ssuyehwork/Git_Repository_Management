@@ -440,7 +440,6 @@ class GitHubManager(QMainWindow):
     
     def __init__(self):
         super().__init__()
-        self.config_file = Path.home() / ".github_manager_config.json"
         self.worker = None
         
         # 检查Git
@@ -453,7 +452,7 @@ class GitHubManager(QMainWindow):
             sys.exit(1)
         
         self.init_ui()
-        self.load_config()
+        # 移除自动加载，改为手动
         QTimer.singleShot(500, self.auto_check_status)
     
     def init_ui(self):
@@ -582,7 +581,26 @@ class GitHubManager(QMainWindow):
         # 按钮行
         button_layout = QHBoxLayout()
         
-        save_btn = QPushButton("💾 保存配置")
+        load_btn = QPushButton("📂 加载配置")
+        load_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #22c55e, stop:1 #16a34a);
+                color: white;
+                font-weight: bold;
+                padding: 8px 15px;
+                border-radius: 6px;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #16a34a, stop:1 #15803d);
+            }
+        """)
+        load_btn.clicked.connect(self.load_config)
+        button_layout.addWidget(load_btn)
+
+        save_btn = QPushButton("💾 保存配置为...")
         save_btn.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -850,21 +868,27 @@ class GitHubManager(QMainWindow):
     def load_config(self):
         """加载配置"""
         try:
-            if self.config_file.exists():
-                with open(self.config_file, 'r', encoding='utf-8') as f:
+            filepath, _ = QFileDialog.getOpenFileName(
+                self,
+                "选择配置文件",
+                "",
+                "JSON 文件 (*.json)"
+            )
+
+            if filepath:
+                with open(filepath, 'r', encoding='utf-8') as f:
                     config = json.load(f)
                     self.local_path_input.setText(config.get('local_path', ''))
                     self.remote_url_input.setText(config.get('remote_url', ''))
                     self.username_input.setText(config.get('username', ''))
                     self.email_input.setText(config.get('email', ''))
-                    self.log("✓ 配置已从本地加载", "success")
-            else:
-                # 使用默认配置
-                self.local_path_input.setText(r"G:\PYthon\GitHub 仓库管理\GitHub 仓库管理")
-                self.remote_url_input.setText("https://github.com/ssuyehwork/Syn_Github_Upload.git")
-                self.log("ℹ 使用默认配置", "info")
+
+                self.log(f"✓ 配置已从 {Path(filepath).name} 加载", "success")
+                QMessageBox.information(self, "成功", "配置文件加载成功!")
+                self.auto_check_status()
         except Exception as e:
             self.log(f"⚠ 加载配置失败: {str(e)}", "error")
+            QMessageBox.critical(self, "错误", f"加载配置失败:\n{str(e)}")
     
     def save_config(self):
         """保存配置"""
@@ -885,13 +909,25 @@ class GitHubManager(QMainWindow):
                 QMessageBox.warning(self, "警告", "请填写远程仓库URL!")
                 return
             
-            # 保存到文件
-            with open(self.config_file, 'w', encoding='utf-8') as f:
-                json.dump(config, f, indent=4, ensure_ascii=False)
-            
-            self.log("✓ 配置已保存", "success")
-            QMessageBox.information(self, "成功", "配置已保存!")
-            self.auto_check_status()
+            # 弹出“另存为”对话框
+            filepath, _ = QFileDialog.getSaveFileName(
+                self,
+                "保存配置文件",
+                "",
+                "JSON 文件 (*.json)"
+            )
+
+            if filepath:
+                # 确保文件扩展名是 .json
+                if not filepath.endswith('.json'):
+                    filepath += '.json'
+
+                # 保存到文件
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    json.dump(config, f, indent=4, ensure_ascii=False)
+
+                self.log(f"✓ 配置已保存到 {Path(filepath).name}", "success")
+                QMessageBox.information(self, "成功", "配置文件已成功保存!")
         except Exception as e:
             self.log(f"✗ 保存配置失败: {str(e)}", "error")
             QMessageBox.critical(self, "错误", f"保存配置失败: {str(e)}")
