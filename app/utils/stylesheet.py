@@ -103,6 +103,51 @@ def get_main_stylesheet():
             color: {PRIMARY_ACCENT};
             border-bottom: 3px solid {PANEL_COLOR}; /* Cover the pane's border */
         }}
+        QComboBox {{
+            background-color: {INPUT_BG};
+            color: {TEXT_COLOR};
+            border: 2px solid {BORDER_COLOR};
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 12px;
+            selection-background-color: {PRIMARY_ACCENT};
+        }}
+        QComboBox:hover {{
+            border: 2px solid {PRIMARY_ACCENT};
+        }}
+        QComboBox::drop-down {{
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 25px;
+            border-left-width: 1px;
+            border-left-color: {BORDER_COLOR};
+            border-left-style: solid;
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }}
+        QComboBox QAbstractItemView {{
+            background-color: {INPUT_BG};
+            color: {TEXT_COLOR};
+            border: 2px solid {BORDER_COLOR};
+            selection-background-color: {PRIMARY_ACCENT};
+        }}
+        QScrollBar:vertical {{
+            border: none;
+            background: {BG_COLOR};
+            width: 12px;
+            margin: 0px 0px 0px 0px;
+        }}
+        QScrollBar::handle:vertical {{
+            background: {BORDER_COLOR};
+            min-height: 20px;
+            border-radius: 6px;
+        }}
+        QScrollBar::handle:vertical:hover {{
+            background: {PRIMARY_ACCENT};
+        }}
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+            height: 0px;
+        }}
     """
 
 def darken_color(hex_color, amount=20):
