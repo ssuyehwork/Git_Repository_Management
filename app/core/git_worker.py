@@ -16,6 +16,7 @@ class GitWorker(QThread):
     """Git 操作工作线程 - 非阻塞式执行"""
     progress = pyqtSignal(str, str)  # (消息, 类型)
     finished = pyqtSignal(bool, str)
+    status_updated = pyqtSignal(dict) # (状态数据字典)
     execute_script = pyqtSignal(str)  # 执行脚本信号
 
     def __init__(self, operation, local_path, remote_url, config):
@@ -143,28 +144,35 @@ class GitWorker(QThread):
         return None
 
     def _check_status(self):
-        """检查仓库状态"""
+        """在后台线程中检查仓库状态"""
+        from app.config import settings
         try:
-            # 检查是否是Git仓库
             if not os.path.exists('.git'):
-                self.finished.emit(False, "当前目录不是Git仓库")
+                self.status_updated.emit({"sync": settings.STATUS_STATE_UNINITIALIZED})
                 return
 
-            # 获取分支
-            branch = self._run_cmd("git branch --show-current", "获取当前分支", silent=True)
-            self.progress.emit(f"当前分支: {branch or 'main'}", "info")
+            branch = self._run_cmd("git branch --show-current", "获取分支", silent=True) or "main"
+            status = self._run_cmd("git status --porcelain", "检查未提交", silent=True)
+            uncommitted = len(status.strip().split('\n')) if status.strip() else 0
 
-            # 检查状态
-            status = self._run_cmd("git status --porcelain", "检查文件状态", silent=True)
-            if status:
-                changes = len(status.split('\n'))
-                self.progress.emit(f"未提交更改: {changes} 个文件", "warning")
-            else:
-                self.progress.emit("工作区干净", "success")
+            try:
+                # 这个命令可能会因为需要网络访问而阻塞
+                unpushed = self._run_cmd("git rev-list @{u}..HEAD --count", "检查未推送", silent=True) or "0"
+                sync_status = settings.STATUS_STATE_CONNECTED
+            except Exception:
+                unpushed = "--"
+                sync_status = settings.STATUS_STATE_LOCAL
 
-            self.finished.emit(True, "状态检查完成")
+            self.status_updated.emit({
+                "branch": branch,
+                "uncommitted": uncommitted,
+                "unpushed": unpushed,
+                "sync": sync_status
+            })
+
         except Exception as e:
-            self.finished.emit(False, f"状态检查失败: {str(e)}")
+            self.progress.emit(f"状态检查失败: {e}", "error")
+            self.status_updated.emit({"sync": settings.STATUS_STATE_ERROR})
 
     def _smart_upload(self):
         """智能上传 - 检测更改并推送"""

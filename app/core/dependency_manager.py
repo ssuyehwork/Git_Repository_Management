@@ -37,27 +37,27 @@ class DependencyManager:
 
         # 安装缺失的包
         if missing_packages:
-            print("\\n" + "=" * 60)
+            print("\n" + "=" * 60)
             print(f"📦 发现 {len(missing_packages)} 个缺失的依赖包")
             print("=" * 60)
 
             for package in missing_packages:
                 DependencyManager._install_package(package)
 
-            print("\\n" + "=" * 60)
+            print("\n" + "=" * 60)
             print("✓ 所有依赖已成功安装!")
             print("=" * 60)
-            print("🚀 正在启动应用程序...\\n")
+            print("🚀 正在启动应用程序...\n")
         else:
-            print("\\n✓ 所有依赖已就绪!")
-            print("🚀 正在启动应用程序...\\n")
+            print("\n✓ 所有依赖已就绪!")
+            print("🚀 正在启动应用程序...\n")
 
         return True
 
     @staticmethod
     def _install_package(package_name):
         """安装单个包"""
-        print(f"\\n📥 正在安装 {package_name}...")
+        print(f"\n📥 正在安装 {package_name}...")
         try:
             subprocess.check_call(
                 [sys.executable, "-m", "pip", "install", package_name, "-q"],

@@ -84,6 +84,20 @@ def get_main_stylesheet():
             color: {settings.Colors.SECONDARY_TEXT};
         }}
 
+        QSplitter::handle {{
+            background-color: {settings.Colors.SECONDARY_BACKGROUND};
+            border: 1px solid {settings.Colors.BORDER_PRIMARY};
+        }}
+        QSplitter::handle:horizontal {{
+            width: 5px;
+        }}
+        QSplitter::handle:vertical {{
+            height: 5px;
+        }}
+        QSplitter::handle:hover {{
+            background-color: {settings.Colors.HIGHLIGHT};
+        }}
+
         /* --- 特定组件样式 --- */
 
         /* Title View */

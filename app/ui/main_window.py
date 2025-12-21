@@ -9,9 +9,9 @@ from datetime import datetime
 
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QMessageBox,
-    QFileDialog, QProgressBar, QInputDialog
+    QFileDialog, QProgressBar, QInputDialog, QSplitter
 )
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, Qt
 
 from app.config import settings
 from app.core.git_worker import GitWorker
@@ -42,12 +42,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(settings.WINDOW_TITLE)
         self.setGeometry(100, 100, settings.WINDOW_DEFAULT_WIDTH, settings.WINDOW_DEFAULT_HEIGHT)
 
-        main_widget = QWidget()
-        self.setCentralWidget(main_widget)
-        main_layout = QHBoxLayout(main_widget)
-        main_layout.setSpacing(10)
-        main_layout.setContentsMargins(15, 15, 15, 15)
-
         # --- 左侧主控制区 ---
         left_container = QWidget()
         left_layout = QVBoxLayout(left_container)
@@ -69,7 +63,6 @@ class MainWindow(QMainWindow):
         # 进度条
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
-        # 样式可以后续移到 styling.py 中
         self.progress_bar.setStyleSheet(f"""
             QProgressBar {{
                 border: 2px solid {settings.Colors.BORDER_FOCUS};
@@ -87,10 +80,23 @@ class MainWindow(QMainWindow):
         left_layout.addWidget(self.progress_bar)
         left_layout.addStretch()
 
-        # 将左右两个区域添加到主布局
+        # 创建 QSplitter 并添加左右两个区域
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.addWidget(left_container)
+        splitter.addWidget(self.log_view)
+
+        # 设置初始尺寸和策略
         left_container.setMinimumWidth(settings.WINDOW_MIN_WIDTH_LEFT_PANEL)
-        main_layout.addWidget(left_container, 2)
-        main_layout.addWidget(self.log_view, 3)
+        total_width = settings.WINDOW_DEFAULT_WIDTH
+        # 初始按大约 2:3 的比例分配
+        splitter.setSizes([int(total_width * 0.4), int(total_width * 0.6)])
+
+        # 将 splitter 设置为中心窗口
+        main_widget = QWidget()
+        main_layout = QHBoxLayout(main_widget)
+        main_layout.setContentsMargins(15, 15, 15, 15)
+        main_layout.addWidget(splitter)
+        self.setCentralWidget(main_widget)
 
         # 状态栏
         self.statusBar().showMessage(settings.STATUS_BAR_READY)
@@ -151,49 +157,23 @@ class MainWindow(QMainWindow):
             self.config_view.local_path_input.setText(folder)
 
     def auto_check_status(self):
-        """自动检查仓库状态并更新UI"""
+        """异步触发仓库状态检查"""
         local_path = self.config_view.local_path_input.text()
         if not local_path or not os.path.exists(local_path):
-            self.status_view.update_status({
-                "sync": settings.STATUS_STATE_UNCONFIGURED
-            })
+            self.status_view.update_status({"sync": settings.STATUS_STATE_UNCONFIGURED})
             return
 
-        try:
-            os.chdir(local_path)
-            if not os.path.exists('.git'):
-                self.status_view.update_status({
-                    "sync": settings.STATUS_STATE_UNINITIALIZED
-                })
-                return
+        # 使用 GitWorker 在后台线程中检查状态
+        # 这里的 remote_url 和 config 不是必需的，但为了复用 execute_operation 的框架而传入
+        config_data = self.config_view.get_config_data()
+        self.status_worker = GitWorker("status", local_path, config_data.get('remote_url', ''), {})
+        self.status_worker.status_updated.connect(self.on_status_updated)
+        self.status_worker.progress.connect(self.log) # 可以选择性地记录后台错误
+        self.status_worker.start()
 
-            branch = self._run_git_command("git branch --show-current") or "main"
-            status = self._run_git_command("git status --porcelain")
-            uncommitted = len(status.strip().split('\\n')) if status.strip() else 0
-
-            try:
-                unpushed = self._run_git_command("git rev-list @{u}..HEAD --count") or "0"
-                sync_status = settings.STATUS_STATE_CONNECTED
-            except subprocess.CalledProcessError:
-                unpushed = "--"
-                sync_status = settings.STATUS_STATE_LOCAL
-
-            self.status_view.update_status({
-                "branch": branch,
-                "uncommitted": uncommitted,
-                "unpushed": unpushed,
-                "sync": sync_status
-            })
-
-        except Exception as e:
-            self.log(f"⚠ 状态检查失败: {str(e)}", "warning")
-            self.status_view.update_status({"sync": settings.STATUS_STATE_ERROR})
-
-    def _run_git_command(self, command):
-        """辅助函数，用于运行git命令并返回输出"""
-        return subprocess.run(
-            command, shell=True, capture_output=True, text=True, check=True, encoding='utf-8'
-        ).stdout.strip()
+    def on_status_updated(self, status_data):
+        """接收后台线程的状态更新并应用到UI"""
+        self.status_view.update_status(status_data)
 
     # --- GitWorker 控制 ---
 
