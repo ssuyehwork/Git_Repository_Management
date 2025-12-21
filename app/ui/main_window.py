@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTime
 from PyQt6.QtGui import QFont, QColor, QTextCursor
 
-from app.utils.stylesheet import get_main_stylesheet
+from app.utils.stylesheet import get_main_stylesheet, darken_color
 
 class GitHubManager(QMainWindow):
     """GitHub仓库智能管理器 - 主窗口 (纯UI)"""
@@ -37,7 +37,7 @@ class GitHubManager(QMainWindow):
 
         # 创建标签页
         tab_widget = QTabWidget()
-        layout.addWidget(tab_widget, 1) # 分配 1 份伸展空间
+        layout.addWidget(tab_widget)
 
         # 创建各个功能页
         git_tab = QWidget()
@@ -52,7 +52,7 @@ class GitHubManager(QMainWindow):
         
         # 公共日志和进度条区域
         log_group = self._create_log_group()
-        layout.addWidget(log_group, 2) # 分配 2 份伸展空间
+        layout.addWidget(log_group)
         
         self.progress_bar = self._create_progress_bar()
         layout.addWidget(self.progress_bar)
@@ -197,7 +197,7 @@ class GitHubManager(QMainWindow):
         
         self.operation_buttons = {}
         for i, (op_name, text, color) in enumerate(operations):
-            btn = self._create_operation_button(text, op_name)
+            btn = self._create_operation_button(text, color)
             layout.addWidget(btn, i // 3, i % 3)
             self.operation_buttons[op_name] = btn
         
@@ -292,11 +292,14 @@ class GitHubManager(QMainWindow):
         layout.addWidget(value_label)
         return widget
     
-    def _create_operation_button(self, text, role):
+    def _create_operation_button(self, text, color):
         btn = QPushButton(text)
         btn.setMinimumHeight(48)
         btn.setFont(QFont("Arial", 11, QFont.Weight.Bold))
-        btn.setProperty("role", role)
+        btn.setStyleSheet(f"""
+            QPushButton {{ background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 {color}, stop:1 {darken_color(color)}); color: white; border-radius: 7px; }}
+            QPushButton:hover {{ background: {darken_color(color)}; }}
+        """)
         return btn
 
     def _create_log_group(self):
