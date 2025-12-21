@@ -24,46 +24,23 @@ class OperationsView(QGroupBox):
         layout.setContentsMargins(8, 12, 8, 8)
 
         for i, btn_config in enumerate(settings.OPERATIONS_BUTTONS):
+            object_name = f"OperationButton_{btn_config['id']}"
             btn = self._create_operation_button(
                 btn_config["text"],
                 btn_config["tooltip"],
-                btn_config["color"]
+                object_name
             )
             self.buttons[btn_config["id"]] = btn
             layout.addWidget(btn, i // 3, i % 3)
 
         self.setLayout(layout)
 
-    def _create_operation_button(self, text, tooltip, hex_color):
+    def _create_operation_button(self, text, tooltip, object_name):
         """创建单个操作按钮"""
         btn = QPushButton(text)
         btn.setToolTip(tooltip)
         btn.setMinimumHeight(48)
         btn.setFont(QFont("Arial", 11, QFont.Weight.Bold))
-
-        # 动态生成样式表
-        color = QColor(hex_color)
-        darker_color_name = color.darker(120).name()
-        pressed_color_name = color.darker(140).name()
-
-        btn.setStyleSheet(f"""
-            QPushButton {{
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 {hex_color}, stop:1 {darker_color_name});
-                color: white;
-                border: none;
-                border-radius: 7px;
-                padding: 10px;
-            }}
-            QPushButton:hover {{
-                background: {darker_color_name};
-            }}
-            QPushButton:pressed {{
-                background: {pressed_color_name};
-            }}
-            QPushButton:disabled {{
-                background: {settings.Colors.BUTTON_DISABLED_BG};
-                color: {settings.Colors.BUTTON_DISABLED_TEXT};
-            }}
-        """)
+        # 使用对象名称代替内联样式
+        btn.setObjectName(object_name)
         return btn

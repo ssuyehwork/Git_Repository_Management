@@ -16,28 +16,21 @@ class TitleView(QWidget):
 
     def _init_ui(self):
         """初始化UI组件"""
-        self.setStyleSheet("""
-            QWidget {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 {brand_start}, stop:1 {brand_end});
-                border-radius: 10px;
-                padding: 12px;
-            }
-        """.format(
-            brand_start=settings.Colors.BRAND_PRIMARY_START,
-            brand_end=settings.Colors.BRAND_PRIMARY_END
-        ))
+        # 为QSS设置对象名称
+        self.setObjectName("TitleView")
 
         layout = QHBoxLayout(self)
 
         title = QLabel(settings.TITLE_VIEW_TEXT)
         title.setFont(QFont("Arial", 20, QFont.Weight.Bold))
-        title.setStyleSheet("color: white;")
+        # 使用对象名称代替内联样式
+        title.setObjectName("TitleView_TitleLabel")
         layout.addWidget(title)
 
         layout.addStretch()
 
         version = QLabel(settings.APP_VERSION)
         version.setFont(QFont("Arial", 10))
-        version.setStyleSheet("color: rgba(255,255,255,0.8);")
+        # 使用对象名称代替内联样式
+        version.setObjectName("TitleView_VersionLabel")
         layout.addWidget(version)

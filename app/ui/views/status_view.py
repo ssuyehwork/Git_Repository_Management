@@ -25,27 +25,23 @@ class StatusView(QGroupBox):
 
         # 创建状态标签
         for i, (key, item) in enumerate(settings.STATUS_ITEMS.items()):
+            object_name = f"StatusWidget_{key}"
             label_widget = self._create_status_label(
                 item["title"],
                 settings.STATUS_DEFAULT_VALUE,
-                item["color"]
+                item["color"],
+                object_name
             )
             self.status_labels[key] = label_widget
             layout.addWidget(label_widget, 0, i)
 
         self.setLayout(layout)
 
-    def _create_status_label(self, title, value, color):
+    def _create_status_label(self, title, value, color_ignored, object_name):
         """创建单个状态标签的小部件"""
         widget = QWidget()
-        widget.setStyleSheet(f"""
-            QWidget {{
-                background-color: {settings.Colors.SECONDARY_BACKGROUND};
-                border-left: 3px solid {color};
-                border-radius: 5px;
-                padding: 6px;
-            }}
-        """)
+        # 使用对象名称代替内联样式
+        widget.setObjectName(object_name)
 
         layout = QVBoxLayout(widget)
         layout.setSpacing(2)
@@ -53,11 +49,10 @@ class StatusView(QGroupBox):
 
         title_label = QLabel(title)
         title_label.setFont(QFont("Arial", 9))
-        title_label.setStyleSheet(f"color: {settings.Colors.SECONDARY_TEXT};")
 
         value_label = QLabel(value)
         value_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
-        value_label.setStyleSheet(f"color: {color};")
+        # 颜色将由全局样式表通过父控件的对象名称来设置
 
         layout.addWidget(title_label)
         layout.addWidget(value_label)

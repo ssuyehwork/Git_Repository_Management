@@ -28,16 +28,7 @@ class LogView(QGroupBox):
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
         self.log_text.setFont(QFont("Consolas", 9))
-        self.log_text.setStyleSheet(f"""
-            QTextEdit {{
-                background-color: {settings.Colors.LOG_BACKGROUND};
-                color: {settings.Colors.PRIMARY_TEXT};
-                border: 2px solid {settings.Colors.SECONDARY_BACKGROUND};
-                border-radius: 8px;
-                padding: 10px;
-                font-family: 'Consolas', 'Courier New', monospace;
-            }}
-        """)
+        self.log_text.setObjectName("LogView_TextEdit")
         layout.addWidget(self.log_text)
 
         self.clear_btn = QPushButton(settings.LOG_CLEAR_BUTTON_TEXT)

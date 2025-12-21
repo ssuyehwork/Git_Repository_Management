@@ -63,46 +63,11 @@ class ConfigView(QGroupBox):
         button_layout = QHBoxLayout()
 
         self.save_btn = QPushButton(settings.CONFIG_BUTTONS["save"])
-        self.save_btn.setStyleSheet("""
-            QPushButton {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 {color_start}, stop:1 {color_end});
-                color: white;
-                font-weight: bold;
-                padding: 8px 15px;
-                border-radius: 6px;
-                font-size: 13px;
-            }}
-            QPushButton:hover {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 {color_end}, stop:1 {color_start_dark});
-            }}
-        """.format(
-            color_start=settings.Colors.SUCCESS,
-            color_end=settings.Colors.SUCCESS_DARK,
-            color_start_dark=settings.Colors.SUCCESS_DARK
-        ))
+        self.save_btn.setObjectName("SaveConfigButton")
         button_layout.addWidget(self.save_btn)
 
         self.refresh_btn = QPushButton(settings.CONFIG_BUTTONS["refresh"])
-        self.refresh_btn.setStyleSheet("""
-            QPushButton {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 {color_start}, stop:1 {color_end});
-                color: white;
-                font-weight: bold;
-                padding: 8px 15px;
-                border-radius: 6px;
-                font-size: 13px;
-            }}
-            QPushButton:hover {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 {color_end}, stop:1 {color_start});
-            }}
-        """.format(
-            color_start=settings.Colors.BRAND_PRIMARY_START,
-            color_end=settings.Colors.BRAND_PRIMARY_END
-        ))
+        self.refresh_btn.setObjectName("RefreshStatusButton")
         button_layout.addWidget(self.refresh_btn)
 
         layout.addLayout(button_layout, 4, 0, 1, 3)
