@@ -465,30 +465,33 @@ class GitHubManager(QMainWindow):
         # 主窗口部件
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
-        layout = QVBoxLayout(main_widget)
-        layout.setSpacing(10)
-        layout.setContentsMargins(15, 15, 15, 15)
-        
+        # 将主布局改为 QHBoxLayout 以实现左右布局
+        main_layout = QHBoxLayout(main_widget)
+        main_layout.setSpacing(10)
+        main_layout.setContentsMargins(15, 15, 15, 15)
+
+        # --- 左侧主控制区 ---
+        left_container = QWidget()
+        left_layout = QVBoxLayout(left_container)
+        left_layout.setSpacing(10)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+
         # 标题区域
         title_widget = self._create_title_widget()
-        layout.addWidget(title_widget)
+        left_layout.addWidget(title_widget)
         
         # 配置区域
         config_group = self._create_config_group()
-        layout.addWidget(config_group)
+        left_layout.addWidget(config_group)
         
         # 仓库状态区域
         self.status_group = self._create_status_group()
-        layout.addWidget(self.status_group)
+        left_layout.addWidget(self.status_group)
         
         # 操作按钮区域
         operations_group = self._create_operations_group()
-        layout.addWidget(operations_group)
-        
-        # 日志区域
-        log_group = self._create_log_group()
-        layout.addWidget(log_group)
-        
+        left_layout.addWidget(operations_group)
+
         # 进度条
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
@@ -508,8 +511,18 @@ class GitHubManager(QMainWindow):
                 border-radius: 6px;
             }
         """)
-        layout.addWidget(self.progress_bar)
+        left_layout.addWidget(self.progress_bar)
+        left_layout.addStretch() # 添加伸缩，防止控件过度拉伸
+
+        # 创建并添加右侧日志区
+        log_group = self._create_log_group()
         
+        # 将左右两个区域添加到主布局
+        # 左侧设置一个固定的初始宽度和较小的伸缩因子
+        left_container.setMinimumWidth(550)
+        main_layout.addWidget(left_container, 2) # 左侧占2份
+        main_layout.addWidget(log_group, 3)      # 右侧占3份，获得更多空间
+
         # 状态栏
         self.statusBar().showMessage("就绪")
         self.statusBar().setStyleSheet("color: #10b981; font-weight: bold;")
@@ -742,7 +755,6 @@ class GitHubManager(QMainWindow):
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
         self.log_text.setMinimumHeight(130)
-        self.log_text.setMaximumHeight(150)
         self.log_text.setFont(QFont("Consolas", 9))
         self.log_text.setStyleSheet("""
             QTextEdit {
