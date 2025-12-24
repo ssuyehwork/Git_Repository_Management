@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 from pathlib import Path
+from datetime import datetime
 
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -36,28 +37,66 @@ class MainWindow(QMainWindow):
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         layout = QVBoxLayout(main_widget)
+        layout.setSpacing(10)
+        layout.setContentsMargins(15, 15, 15, 15)
 
-        # ... (此处省略了与之前版本几乎完全相同的UI创建代码)
-        # 为了简洁，仅展示关键的、有变化的部分
+        title_widget = self._create_title_widget()
         config_group = self._create_config_group()
+        status_group = self._create_status_group()
         operations_group = self._create_operations_group()
         log_group = self._create_log_group()
 
+        layout.addWidget(title_widget)
         layout.addWidget(config_group)
-        layout.addWidget(self._create_status_group())
+        layout.addWidget(status_group)
         layout.addWidget(operations_group)
         layout.addWidget(log_group)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
+        self.progress_bar.setStyleSheet("""
+            QProgressBar {
+                border: 2px solid #6366f1; border-radius: 8px; text-align: center;
+                height: 30px; background-color: #1f2937; color: white; font-weight: bold;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6366f1, stop:1 #8b5cf6);
+                border-radius: 6px;
+            }
+        """)
         layout.addWidget(self.progress_bar)
 
         self.statusBar().showMessage("就绪")
+        self.statusBar().setStyleSheet("color: #10b981; font-weight: bold;")
+
+    def _create_title_widget(self):
+        """创建标题区域"""
+        widget = QWidget()
+        widget.setStyleSheet("""
+            QWidget {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6366f1, stop:1 #8b5cf6);
+                border-radius: 10px; padding: 12px;
+            }
+        """)
+        layout = QHBoxLayout(widget)
+        title = QLabel("🚀 GitHub 仓库智能管理器")
+        title.setFont(QFont("Arial", 20, QFont.Weight.Bold))
+        title.setStyleSheet("color: white;")
+        layout.addWidget(title)
+        layout.addStretch()
+        version = QLabel("v3.0 Modular")
+        version.setFont(QFont("Arial", 10))
+        version.setStyleSheet("color: rgba(255,255,255,0.8);")
+        layout.addWidget(version)
+        return widget
 
     def _create_config_group(self):
         """创建配置组 - UI和事件绑定"""
         group = QGroupBox("⚙ 仓库配置")
+        group.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         layout = QGridLayout()
+        layout.setSpacing(8)
+        layout.setContentsMargins(8, 10, 8, 8)
 
         self.profile_combo = QComboBox()
         self.profile_combo.currentTextChanged.connect(self.on_profile_changed)
@@ -68,26 +107,36 @@ class MainWindow(QMainWindow):
         self.email_input = QLineEdit()
 
         browse_btn = QPushButton("📂 浏览")
+        browse_btn.setFixedWidth(100)
         browse_btn.clicked.connect(self.browse_folder)
 
-        new_btn = QPushButton("➕ 新建")
+        new_btn = QPushButton("➕ 新建方案")
+        update_btn = QPushButton("💾 更新方案")
+        delete_btn = QPushButton("❌ 删除方案")
+        refresh_btn = QPushButton("🔄 刷新状态")
         new_btn.clicked.connect(self.create_new_profile)
-        update_btn = QPushButton("💾 更新")
         update_btn.clicked.connect(self.update_current_profile)
-        delete_btn = QPushButton("❌ 删除")
         delete_btn.clicked.connect(self.delete_current_profile)
+        refresh_btn.clicked.connect(self.auto_check_status)
 
-        # ... (布局代码省略)
         layout.addWidget(QLabel("📂 配置方案:"), 0, 0)
         layout.addWidget(self.profile_combo, 0, 1, 1, 2)
         layout.addWidget(QLabel("📁 本地路径:"), 1, 0)
         layout.addWidget(self.local_path_input, 1, 1)
         layout.addWidget(browse_btn, 1, 2)
-        # ... (其他输入框布局)
+        layout.addWidget(QLabel("🌐 远程仓库:"), 2, 0)
+        layout.addWidget(self.remote_url_input, 2, 1, 1, 2)
+        layout.addWidget(QLabel("👤 用户名:"), 3, 0)
+        layout.addWidget(self.username_input, 3, 1, 1, 2)
+        layout.addWidget(QLabel("📧 邮箱:"), 4, 0)
+        layout.addWidget(self.email_input, 4, 1, 1, 2)
+
         button_layout = QHBoxLayout()
         button_layout.addWidget(new_btn)
         button_layout.addWidget(update_btn)
         button_layout.addWidget(delete_btn)
+        button_layout.addStretch(1)
+        button_layout.addWidget(refresh_btn)
         layout.addLayout(button_layout, 5, 0, 1, 3)
 
         group.setLayout(layout)
@@ -96,14 +145,42 @@ class MainWindow(QMainWindow):
     def _create_operations_group(self):
         """创建操作按钮组"""
         group = QGroupBox("🎯 智能操作")
+        group.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         layout = QGridLayout()
+        layout.setSpacing(8)
+
         operations = [
-            ("📤 智能上传", self.smart_upload),
-            ("📥 智能下载", self.smart_download),
-            # ... (其他操作)
+            ("📤 智能上传", "自动检测并上传更改", "#10b981", self.smart_upload),
+            ("📥 智能下载", "拉取远程最新更新", "#3b82f6", self.smart_download),
+            ("🔄 智能同步", "双向同步本地与远程", "#8b5cf6", self.smart_sync),
+            ("⚡ 强制覆盖", "用本地强制覆盖远程", "#f59e0b", self.smart_overwrite),
+            ("🗑 清理远程", "删除远程所有文件", "#ef4444", self.smart_delete),
+            ("🔧 初始化", "初始化Git仓库", "#06b6d4", self.init_repo),
         ]
-        # ... (按钮创建循环)
+
+        for i, (text, tooltip, color, func) in enumerate(operations):
+            btn = self._create_operation_button(text, tooltip, color, func)
+            layout.addWidget(btn, i // 3, i % 3)
+
+        group.setLayout(layout)
         return group
+
+    def _create_operation_button(self, text, tooltip, color, callback):
+        """创建操作按钮"""
+        btn = QPushButton(text)
+        btn.setToolTip(tooltip)
+        btn.setMinimumHeight(48)
+        btn.setFont(QFont("Arial", 11, QFont.Weight.Bold))
+        btn.setStyleSheet(f"""
+            QPushButton {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 {color}, stop:1 {self._darken_color(color)});
+                color: white; border: none; border-radius: 7px; padding: 10px;
+            }}
+            QPushButton:hover {{ background: {self._darken_color(color)}; }}
+            QPushButton:pressed {{ background: {self._darken_color(color, 40)}; }}
+        """)
+        btn.clicked.connect(callback)
+        return btn
 
     # ================================
     # UI -> Service/Core (逻辑调用)
@@ -121,6 +198,10 @@ class MainWindow(QMainWindow):
         if last_profile_name:
             self.profile_combo.setCurrentText(last_profile_name)
             self.on_profile_changed(last_profile_name)
+        elif profiles:
+            first_profile = list(profiles.keys())[0]
+            self.profile_combo.setCurrentText(first_profile)
+            self.on_profile_changed(first_profile)
 
         self.profile_combo.blockSignals(False)
 
@@ -128,11 +209,12 @@ class MainWindow(QMainWindow):
         """当用户切换配置方案时，更新输入框"""
         if profile_name:
             profile_data = self.config_service.get_profile(profile_name)
-            self.local_path_input.setText(profile_data.get('local_path', ''))
-            self.remote_url_input.setText(profile_data.get('remote_url', ''))
-            self.username_input.setText(profile_data.get('username', ''))
-            self.email_input.setText(profile_data.get('email', ''))
-            self.auto_check_status()
+            if profile_data:
+                self.local_path_input.setText(profile_data.get('local_path', ''))
+                self.remote_url_input.setText(profile_data.get('remote_url', ''))
+                self.username_input.setText(profile_data.get('username', ''))
+                self.email_input.setText(profile_data.get('email', ''))
+                self.auto_check_status()
 
     def create_new_profile(self):
         """处理'新建'按钮点击"""
@@ -141,7 +223,7 @@ class MainWindow(QMainWindow):
             try:
                 current_data = self._get_data_from_inputs()
                 self.config_service.save_profile(profile_name, current_data)
-                self.load_profiles_to_ui() # 重新加载
+                self.load_profiles_to_ui()
                 self.log(f"✓ 成功创建方案: {profile_name}", "success")
             except ValueError as e:
                 QMessageBox.warning(self, "错误", str(e))
@@ -162,61 +244,96 @@ class MainWindow(QMainWindow):
     def delete_current_profile(self):
         """处理'删除'按钮点击"""
         current_profile = self.profile_combo.currentText()
-        try:
-            if self.config_service.delete_profile(current_profile):
-                self.load_profiles_to_ui()
-                self.log(f"✓ 成功删除方案: {current_profile}", "success")
-        except ValueError as e:
-            QMessageBox.warning(self, "错误", str(e))
+        reply = QMessageBox.question(
+            self, "确认删除", f"确定要删除配置方案 '{current_profile}' 吗？",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No)
 
-    def execute_operation(self, operation):
+        if reply == QMessageBox.StandardButton.Yes:
+            try:
+                if self.config_service.delete_profile(current_profile):
+                    self.load_profiles_to_ui()
+                    self.log(f"✓ 成功删除方案: {current_profile}", "success")
+            except ValueError as e:
+                QMessageBox.warning(self, "错误", str(e))
+
+    def execute_operation(self, operation, confirm_msg=None):
         """通用Git操作执行器"""
         local_path = self.local_path_input.text()
         remote_url = self.remote_url_input.text()
-        config = self._get_data_from_inputs()
 
-        if not local_path or not remote_url:
+        if not local_path or not remote_url and operation != 'init':
             QMessageBox.warning(self, "警告", "请先配置并选择一个有效的方案！")
             return
 
+        if confirm_msg:
+            reply = QMessageBox.question(self, "确认操作", confirm_msg,
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No)
+            if reply != QMessageBox.StandardButton.Yes: return
+
         self.setEnabled(False)
         self.progress_bar.setVisible(True)
+        self.progress_bar.setRange(0, 0)
 
+        config = self._get_data_from_inputs()
         self.worker = GitWorker(operation, local_path, remote_url, config)
         self.worker.progress.connect(self.on_progress)
         self.worker.finished.connect(self.on_operation_finished)
         self.worker.start()
 
-    # --- 具体操作的简单调用 ---
     def smart_upload(self): self.execute_operation("upload")
     def smart_download(self): self.execute_operation("download")
     def smart_sync(self): self.execute_operation("sync")
-    # ... 其他按钮也类似
+    def init_repo(self): self.execute_operation("init")
+    def smart_overwrite(self):
+        self.execute_operation("overwrite", "⚠ 警告: 这将用本地版本强制覆盖远程仓库！\n远程的更改将永久丢失！确定继续吗？")
+    def smart_delete(self):
+        text, ok = QInputDialog.getText(self, "⚠ 危险操作确认", "此操作不可恢复！\n请输入 'DELETE' 确认删除远程仓库所有文件:")
+        if ok and text == "DELETE":
+            self.execute_operation("delete")
 
     def auto_check_status(self):
-        """
-        直接、快速地检查本地Git状态。
-        这部分逻辑很简单，直接调用git命令比启动一个完整线程更高效。
-        """
         local_path = self.local_path_input.text()
-        if not local_path or not os.path.exists(os.path.join(local_path, '.git')):
-            # 更新UI显示为'未初始化'
+        status_widget = self.findChild(QWidget, "status_widget")
+        if not local_path or not os.path.isdir(local_path):
+            self.update_status_display("--", "--", "--", "路径无效")
             return
 
         try:
             os.chdir(local_path)
-            branch = subprocess.check_output("git branch --show-current").strip().decode()
-            # ... 其他状态检查命令
-            # 更新UI状态标签
-        except Exception:
-            # 更新UI显示为'检查失败'
-            pass
+            if not os.path.exists(".git"):
+                self.update_status_display("--", "--", "--", "未初始化")
+                return
+
+            branch = subprocess.check_output(["git", "branch", "--show-current"]).strip().decode() or "main"
+            status = subprocess.check_output(["git", "status", "--porcelain"]).decode()
+            uncommitted = len(status.strip().split('\n')) if status.strip() else 0
+
+            try:
+                subprocess.check_output(["git", "rev-parse", "@{u}"]).strip().decode()
+                unpushed_cmd = ["git", "rev-list", "@{u}..HEAD", "--count"]
+                unpushed = subprocess.check_output(unpushed_cmd).strip().decode()
+                status_text = "✓ 已连接"
+            except subprocess.CalledProcessError:
+                unpushed = "--"
+                status_text = "仅本地"
+
+            self.update_status_display(branch, str(uncommitted), str(unpushed), status_text)
+        except Exception as e:
+            self.update_status_display("错误", "错误", "错误", "检查失败")
+            self.log(f"状态检查失败: {e}", "error")
+
+    def update_status_display(self, branch, uncommitted, unpushed, sync_status):
+        self.branch_label.value_label.setText(branch)
+        self.uncommitted_label.value_label.setText(uncommitted)
+        self.unpushed_label.value_label.setText(unpushed)
+        self.sync_label.value_label.setText(sync_status)
 
     # ================================
     # 辅助方法
     # ================================
     def _get_data_from_inputs(self):
-        """从UI输入框收集数据"""
         return {
             'local_path': self.local_path_input.text(),
             'remote_url': self.remote_url_input.text(),
@@ -230,29 +347,19 @@ class MainWindow(QMainWindow):
     def on_operation_finished(self, success, message):
         self.setEnabled(True)
         self.progress_bar.setVisible(False)
+        self.progress_bar.setRange(0, 100)
         self.log(message, "success" if success else "error")
+        QMessageBox.information(self, "操作完成", message)
         self.auto_check_status()
 
     def log(self, message, msg_type="info"):
         """添加日志条目到UI"""
-        from datetime import datetime
         timestamp = datetime.now().strftime("%H:%M:%S")
-
-        colors = {
-            "info": "#3b82f6",
-            "success": "#10b981",
-            "warning": "#f59e0b",
-            "error": "#ef4444"
-        }
+        colors = {"info": "#3b82f6", "success": "#10b981", "warning": "#f59e0b", "error": "#ef4444"}
         color = colors.get(msg_type, "#cbd5e1")
-
-        html = f'<span style="color: #64748b;">[{timestamp}]</span> '
-        html += f'<span style="color: {color}; font-weight: bold;">{message}</span>'
-
+        html = f'<span style="color: #64748b;">[{timestamp}]</span> <span style="color: {color}; font-weight: bold;">{message}</span>'
         self.log_text.append(html)
-
-        scrollbar = self.log_text.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
+        self.log_text.verticalScrollBar().setValue(self.log_text.verticalScrollBar().maximum())
 
     def browse_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "选择本地仓库路径")
@@ -264,8 +371,6 @@ class MainWindow(QMainWindow):
         group = QGroupBox("📊 仓库状态")
         group.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         layout = QGridLayout()
-        layout.setSpacing(6)
-        layout.setContentsMargins(8, 12, 8, 8)
 
         self.branch_label = self._create_status_label("🌿 分支", "--", "#10b981")
         self.uncommitted_label = self._create_status_label("📝 未提交", "--", "#f59e0b")
@@ -283,128 +388,61 @@ class MainWindow(QMainWindow):
     def _create_status_label(self, title, value, color):
         """创建状态标签"""
         widget = QWidget()
+        widget.setObjectName("status_widget")
         widget.setStyleSheet(f"""
-            QWidget {{
-                background-color: #1f2937;
-                border-left: 3px solid {color};
-                border-radius: 5px;
-                padding: 6px;
-            }}
+            QWidget {{ background-color: #1f2937; border-left: 3px solid {color}; border-radius: 5px; padding: 6px; }}
         """)
-
         layout = QVBoxLayout(widget)
-        layout.setSpacing(2)
-        layout.setContentsMargins(6, 4, 6, 4)
-
         title_label = QLabel(title)
         title_label.setFont(QFont("Arial", 9))
-        title_label.setStyleSheet("color: #9ca3af;")
-
         value_label = QLabel(value)
         value_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
-        value_label.setStyleSheet(f"color: {color};")
-
         layout.addWidget(title_label)
         layout.addWidget(value_label)
-
         widget.value_label = value_label
         return widget
 
     def _create_log_group(self):
         """创建日志组"""
         group = QGroupBox("📋 操作日志")
-        group.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         layout = QVBoxLayout()
-        layout.setContentsMargins(8, 12, 8, 8)
-
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
-        self.log_text.setMinimumHeight(130)
-        self.log_text.setMaximumHeight(150)
-        self.log_text.setFont(QFont("Consolas", 9))
         self.log_text.setStyleSheet("""
             QTextEdit {
-                background-color: #0f172a;
-                color: #e2e8f0;
-                border: 2px solid #1e293b;
-                border-radius: 8px;
-                padding: 10px;
-                font-family: 'Consolas', 'Courier New', monospace;
+                background-color: #0f172a; color: #e2e8f0; border: 2px solid #1e293b;
+                border-radius: 8px; padding: 10px; font-family: 'Consolas', 'Courier New', monospace;
             }
         """)
-        layout.addWidget(self.log_text)
-
         clear_btn = QPushButton("🧹 清空日志")
         clear_btn.clicked.connect(self.log_text.clear)
+        layout.addWidget(self.log_text)
         layout.addWidget(clear_btn)
-
         group.setLayout(layout)
         return group
 
     def _get_stylesheet(self):
         """获取全局样式表"""
         return """
-            QMainWindow {
-                background-color: #0f172a;
-            }
+            QMainWindow { background-color: #0f172a; }
             QGroupBox {
-                color: #f1f5f9;
-                border: 2px solid #334155;
-                border-radius: 10px;
-                margin-top: 8px;
-                padding-top: 18px;
-                background-color: #1e293b;
-                font-size: 14px;
+                color: #f1f5f9; border: 2px solid #334155; border-radius: 10px;
+                margin-top: 8px; padding-top: 18px; background-color: #1e293b;
             }
             QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 20px;
-                padding: 0 8px;
-                background-color: #1e293b;
+                subcontrol-origin: margin; left: 20px; padding: 0 8px;
             }
-            QLabel {
-                color: #cbd5e1;
-                font-size: 13px;
-            }
+            QLabel { color: #cbd5e1; font-size: 13px; }
             QLineEdit {
-                background-color: #334155;
-                color: #f1f5f9;
-                border: 2px solid #475569;
-                border-radius: 6px;
-                padding: 8px;
-                font-size: 12px;
-                selection-background-color: #6366f1;
+                background-color: #334155; color: #f1f5f9; border: 2px solid #475569;
+                border-radius: 6px; padding: 8px;
             }
-            QLineEdit:focus {
-                border: 2px solid #6366f1;
-                background-color: #3f4d63;
-            }
-            QLineEdit::placeholder {
-                color: #64748b;
-            }
+            QLineEdit:focus { border: 2px solid #6366f1; }
             QPushButton {
-                background-color: #475569;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 10px;
-                font-size: 12px;
-                font-weight: bold;
+                background-color: #475569; color: white; border: none;
+                border-radius: 6px; padding: 10px; font-weight: bold;
             }
-            QPushButton:hover {
-                background-color: #64748b;
-            }
-            QPushButton:pressed {
-                background-color: #334155;
-            }
-            QPushButton:disabled {
-                background-color: #334155;
-                color: #64748b;
-            }
-            QStatusBar {
-                background-color: #1e293b;
-                color: #cbd5e1;
-            }
+            QPushButton:hover { background-color: #64748b; }
         """
 
     def _darken_color(self, hex_color, amount=20):
