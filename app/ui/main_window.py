@@ -136,10 +136,20 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.email_input, 4, 1, 1, 2)
 
         button_layout = QHBoxLayout()
-        button_layout.addWidget(new_btn)
-        button_layout.addWidget(update_btn)
-        button_layout.addWidget(delete_btn)
-        button_layout.addWidget(refresh_btn)
+
+        # 将CRUD按钮分组
+        crud_widget = QWidget()
+        crud_layout = QHBoxLayout(crud_widget)
+        crud_layout.setContentsMargins(0, 0, 0, 0)
+        crud_layout.setSpacing(8)
+        crud_layout.addWidget(new_btn)
+        crud_layout.addWidget(update_btn)
+        crud_layout.addWidget(delete_btn)
+
+        # 添加按钮组和刷新按钮，并设置拉伸因子为1，使其平分空间
+        button_layout.addWidget(crud_widget, 1)
+        button_layout.addWidget(refresh_btn, 1)
+
         layout.addLayout(button_layout, 5, 0, 1, 3)
 
         group.setLayout(layout)
