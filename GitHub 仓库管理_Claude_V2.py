@@ -111,7 +111,8 @@ if __name__ == '__main__':
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QLineEdit, QPushButton, QTextEdit, QGroupBox,
-    QGridLayout, QMessageBox, QFileDialog, QProgressBar, QSplashScreen
+    QGridLayout, QMessageBox, QFileDialog, QProgressBar, QSplashScreen,
+    QComboBox, QInputDialog
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize
 from PyQt6.QtGui import QFont, QPalette, QColor, QPixmap, QPainter
@@ -441,6 +442,8 @@ class GitHubManager(QMainWindow):
     def __init__(self):
         super().__init__()
         self.config_file = Path.home() / ".github_manager_config.json"
+        self.profiles = {}  # 用于存储多个配置方案
+        self.current_profile_name = None # 用于跟踪当前选中的方案
         self.worker = None
         
         # 检查Git
@@ -550,77 +553,79 @@ class GitHubManager(QMainWindow):
         layout.setSpacing(8)
         layout.setContentsMargins(8, 10, 8, 8)
         
+        # 配置方案
+        layout.addWidget(QLabel("📂 配置方案:"), 0, 0)
+        self.profile_combo = QComboBox()
+        self.profile_combo.currentTextChanged.connect(self._load_profile_to_ui)
+        layout.addWidget(self.profile_combo, 0, 1, 1, 2)
+
         # 本地路径
-        layout.addWidget(QLabel("📁 本地路径:"), 0, 0)
+        layout.addWidget(QLabel("📁 本地路径:"), 1, 0)
         self.local_path_input = QLineEdit()
         self.local_path_input.setPlaceholderText("例如: G:\\PYthon\\GitHub 仓库管理")
-        layout.addWidget(self.local_path_input, 0, 1)
+        layout.addWidget(self.local_path_input, 1, 1)
         
         browse_btn = QPushButton("📂 浏览")
         browse_btn.setFixedWidth(100)
         browse_btn.clicked.connect(self.browse_folder)
-        layout.addWidget(browse_btn, 0, 2)
+        layout.addWidget(browse_btn, 1, 2)
         
         # 远程URL
-        layout.addWidget(QLabel("🌐 远程仓库:"), 1, 0)
+        layout.addWidget(QLabel("🌐 远程仓库:"), 2, 0)
         self.remote_url_input = QLineEdit()
         self.remote_url_input.setPlaceholderText("https://github.com/username/repo.git")
-        layout.addWidget(self.remote_url_input, 1, 1, 1, 2)
+        layout.addWidget(self.remote_url_input, 2, 1, 1, 2)
         
         # Git用户名
-        layout.addWidget(QLabel("👤 用户名:"), 2, 0)
+        layout.addWidget(QLabel("👤 用户名:"), 3, 0)
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText("Git用户名 (可选)")
-        layout.addWidget(self.username_input, 2, 1, 1, 2)
+        layout.addWidget(self.username_input, 3, 1, 1, 2)
         
         # Git邮箱
-        layout.addWidget(QLabel("📧 邮箱:"), 3, 0)
+        layout.addWidget(QLabel("📧 邮箱:"), 4, 0)
         self.email_input = QLineEdit()
         self.email_input.setPlaceholderText("Git邮箱 (可选)")
-        layout.addWidget(self.email_input, 3, 1, 1, 2)
+        layout.addWidget(self.email_input, 4, 1, 1, 2)
         
         # 按钮行
         button_layout = QHBoxLayout()
+
+        btn_style = """
+            QPushButton {{
+                color: white; font-weight: bold; padding: 8px 15px;
+                border-radius: 6px; font-size: 13px;
+            }}
+            QPushButton:hover {{ background: {hover_color}; }}
+        """
+
+        new_btn = QPushButton("➕ 新建方案")
+        new_btn.setStyleSheet(btn_style.format(hover_color="#059669") + \
+            "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #059669); }")
+        new_btn.clicked.connect(self.create_new_profile)
+        button_layout.addWidget(new_btn)
         
-        save_btn = QPushButton("💾 保存配置")
-        save_btn.setStyleSheet("""
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #10b981, stop:1 #059669);
-                color: white;
-                font-weight: bold;
-                padding: 8px 15px;
-                border-radius: 6px;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #059669, stop:1 #047857);
-            }
-        """)
-        save_btn.clicked.connect(self.save_config)
-        button_layout.addWidget(save_btn)
-        
+        update_btn = QPushButton("💾 更新方案")
+        update_btn.setStyleSheet(btn_style.format(hover_color="#4f46e5") + \
+            "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #6366f1, stop:1 #4f46e5); }")
+        update_btn.clicked.connect(self.update_current_profile)
+        button_layout.addWidget(update_btn)
+
+        delete_btn = QPushButton("❌ 删除方案")
+        delete_btn.setStyleSheet(btn_style.format(hover_color="#d97706") + \
+            "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f59e0b, stop:1 #d97706); }")
+        delete_btn.clicked.connect(self.delete_current_profile)
+        button_layout.addWidget(delete_btn)
+
+        button_layout.addStretch(1)
+
         refresh_btn = QPushButton("🔄 刷新状态")
-        refresh_btn.setStyleSheet("""
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #6366f1, stop:1 #4f46e5);
-                color: white;
-                font-weight: bold;
-                padding: 8px 15px;
-                border-radius: 6px;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #4f46e5, stop:1 #4338ca);
-            }
-        """)
+        refresh_btn.setStyleSheet(btn_style.format(hover_color="#4338ca") + \
+            "QPushButton { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4f46e5, stop:1 #4338ca); }")
         refresh_btn.clicked.connect(self.auto_check_status)
         button_layout.addWidget(refresh_btn)
         
-        layout.addLayout(button_layout, 4, 0, 1, 3)
+        layout.addLayout(button_layout, 5, 0, 1, 3)
         
         group.setLayout(layout)
         return group
@@ -850,51 +855,170 @@ class GitHubManager(QMainWindow):
     def load_config(self):
         """加载配置"""
         try:
-            if self.config_file.exists():
+            if not self.config_file.exists():
+                # 如果没有配置文件，创建一个默认配置
+                self.profiles = {
+                    "默认配置": {
+                        'local_path': r"G:\PYthon\GitHub 仓库管理\GitHub 仓库管理",
+                        'remote_url': "https://github.com/ssuyehwork/Syn_Github_Upload.git",
+                        'username': '',
+                        'email': ''
+                    }
+                }
+                self.current_profile_name = "默认配置"
+                self._save_config_data()
+                self.log("ℹ️ 未找到配置文件，已创建默认配置", "info")
+            else:
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-                    self.local_path_input.setText(config.get('local_path', ''))
-                    self.remote_url_input.setText(config.get('remote_url', ''))
-                    self.username_input.setText(config.get('username', ''))
-                    self.email_input.setText(config.get('email', ''))
+
+                # 兼容旧格式：检查顶层是否存在 local_path
+                if 'local_path' in config:
+                    self.profiles = {"默认配置": config}
+                    self.current_profile_name = "默认配置"
+                    self._save_config_data() # 迁移到新格式
+                    self.log("🔄 旧配置文件已成功迁移到新格式", "success")
+                else: # 新格式
+                    self.profiles = config.get('profiles', {})
+                    self.current_profile_name = config.get('last_profile')
                     self.log("✓ 配置已从本地加载", "success")
-            else:
-                # 使用默认配置
-                self.local_path_input.setText(r"G:\PYthon\GitHub 仓库管理\GitHub 仓库管理")
-                self.remote_url_input.setText("https://github.com/ssuyehwork/Syn_Github_Upload.git")
-                self.log("ℹ 使用默认配置", "info")
+
+            self._update_profile_combo()
+
         except Exception as e:
             self.log(f"⚠ 加载配置失败: {str(e)}", "error")
-    
-    def save_config(self):
-        """保存配置"""
+            QMessageBox.critical(self, "错误", f"加载配置时发生严重错误: {e}")
+
+    def _update_profile_combo(self):
+        """更新配置方案下拉菜单"""
+        self.profile_combo.blockSignals(True)
+        self.profile_combo.clear()
+
+        if not self.profiles:
+            self.profile_combo.addItem("无可用配置")
+            self._clear_input_fields()
+        else:
+            self.profile_combo.addItems(self.profiles.keys())
+            if self.current_profile_name in self.profiles:
+                self.profile_combo.setCurrentText(self.current_profile_name)
+                self._load_profile_to_ui(self.current_profile_name)
+            elif self.profiles:
+                first_profile_name = list(self.profiles.keys())[0]
+                self.profile_combo.setCurrentText(first_profile_name)
+                self._load_profile_to_ui(first_profile_name)
+                self.current_profile_name = first_profile_name
+
+        self.profile_combo.blockSignals(False)
+        self.auto_check_status()
+
+    def _load_profile_to_ui(self, profile_name):
+        """将指定配置方案加载到UI输入框"""
+        profile_data = self.profiles.get(profile_name, {})
+        self.local_path_input.setText(profile_data.get('local_path', ''))
+        self.remote_url_input.setText(profile_data.get('remote_url', ''))
+        self.username_input.setText(profile_data.get('username', ''))
+        self.email_input.setText(profile_data.get('email', ''))
+        self.current_profile_name = profile_name
+
+    def _clear_input_fields(self):
+        """清空所有输入框"""
+        self.local_path_input.clear()
+        self.remote_url_input.clear()
+        self.username_input.clear()
+        self.email_input.clear()
+
+    def _save_config_data(self):
+        """将内存中的配置数据写入文件"""
         try:
-            config = {
+            config_data = {
+                'profiles': self.profiles,
+                'last_profile': self.current_profile_name
+            }
+            with open(self.config_file, 'w', encoding='utf-8') as f:
+                json.dump(config_data, f, indent=4, ensure_ascii=False)
+            return True
+        except Exception as e:
+            self.log(f"✗ 保存配置文件失败: {str(e)}", "error")
+            QMessageBox.critical(self, "错误", f"保存配置文件失败: {str(e)}")
+            return False
+
+    def create_new_profile(self):
+        """创建新的配置方案"""
+        profile_name, ok = QInputDialog.getText(self, "新建配置方案", "请输入方案名称:")
+        if ok and profile_name:
+            if profile_name in self.profiles:
+                QMessageBox.warning(self, "名称已存在", f"名为 '{profile_name}' 的配置方案已存在。")
+                return
+
+            # 验证输入
+            if not self.local_path_input.text() or not self.remote_url_input.text():
+                QMessageBox.warning(self, "信息不完整", "请先填写本地路径和远程仓库URL。")
+                return
+
+            new_profile = {
                 'local_path': self.local_path_input.text(),
                 'remote_url': self.remote_url_input.text(),
                 'username': self.username_input.text(),
                 'email': self.email_input.text()
             }
             
-            # 验证配置
-            if not config['local_path']:
-                QMessageBox.warning(self, "警告", "请填写本地路径!")
-                return
+            self.profiles[profile_name] = new_profile
+            self.current_profile_name = profile_name
             
-            if not config['remote_url']:
-                QMessageBox.warning(self, "警告", "请填写远程仓库URL!")
-                return
+            if self._save_config_data():
+                self.log(f"✓ 新建并保存了配置方案: {profile_name}", "success")
+                self._update_profile_combo()
+                QMessageBox.information(self, "成功", f"已创建新的配置方案: {profile_name}")
+
+    def update_current_profile(self):
+        """更新当前选中的配置方案"""
+        if not self.current_profile_name:
+            QMessageBox.warning(self, "无活动方案", "没有选中的配置方案可供更新。")
+            return
+
+        # 验证输入
+        if not self.local_path_input.text() or not self.remote_url_input.text():
+            QMessageBox.warning(self, "信息不完整", "请填写本地路径和远程仓库URL。")
+            return
+
+        updated_profile = {
+            'local_path': self.local_path_input.text(),
+            'remote_url': self.remote_url_input.text(),
+            'username': self.username_input.text(),
+            'email': self.email_input.text()
+        }
+
+        self.profiles[self.current_profile_name] = updated_profile
+
+        if self._save_config_data():
+            self.log(f"✓ 更新了配置方案: {self.current_profile_name}", "success")
+            QMessageBox.information(self, "成功", f"配置方案 '{self.current_profile_name}' 已更新。")
+
+    def delete_current_profile(self):
+        """删除当前选中的配置方案"""
+        if not self.current_profile_name:
+            QMessageBox.warning(self, "无活动方案", "没有选中的配置方案可供删除。")
+            return
             
-            # 保存到文件
-            with open(self.config_file, 'w', encoding='utf-8') as f:
-                json.dump(config, f, indent=4, ensure_ascii=False)
+        if len(self.profiles) <= 1:
+            QMessageBox.warning(self, "无法删除", "这是最后一个配置方案，无法删除。")
+            return
+
+        reply = QMessageBox.question(
+            self, "确认删除",
+            f"确定要删除配置方案 '{self.current_profile_name}' 吗？此操作不可撤销。",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            del self.profiles[self.current_profile_name]
+            self.current_profile_name = list(self.profiles.keys())[0] # 切换到第一个
             
-            self.log("✓ 配置已保存", "success")
-            QMessageBox.information(self, "成功", "配置已保存!")
-            self.auto_check_status()
-        except Exception as e:
-            self.log(f"✗ 保存配置失败: {str(e)}", "error")
-            QMessageBox.critical(self, "错误", f"保存配置失败: {str(e)}")
+            if self._save_config_data():
+                self.log(f"✓ 删除了配置方案: {self.current_profile_name}", "success")
+                self._update_profile_combo()
+                QMessageBox.information(self, "成功", "配置方案已删除。")
     
     def log(self, message, msg_type="info"):
         """添加日志"""
