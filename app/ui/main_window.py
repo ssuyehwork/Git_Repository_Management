@@ -32,7 +32,6 @@ class MainWindow(QMainWindow):
         """初始化用户界面"""
         self.setWindowTitle("GitHub 仓库智能管理器 v3.0 (模块化版)")
         self.setGeometry(100, 100, 1100, 750)
-        self.setStyleSheet(self._get_stylesheet())
 
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -437,6 +436,7 @@ class MainWindow(QMainWindow):
         title_label.setFont(QFont("Arial", 9))
         value_label = QLabel(value)
         value_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        value_label.setStyleSheet(f"color: {color};")
         layout.addWidget(title_label)
         layout.addWidget(value_label)
         widget.value_label = value_label
@@ -460,30 +460,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(clear_btn)
         group.setLayout(layout)
         return group
-
-    def _get_stylesheet(self):
-        """获取全局样式表"""
-        return """
-            QMainWindow { background-color: #0f172a; }
-            QGroupBox {
-                color: #f1f5f9; border: 2px solid #334155; border-radius: 10px;
-                margin-top: 8px; padding-top: 18px; background-color: #1e293b;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin; left: 20px; padding: 0 8px;
-            }
-            QLabel { color: #cbd5e1; font-size: 13px; }
-            QLineEdit {
-                background-color: #334155; color: #f1f5f9; border: 2px solid #475569;
-                border-radius: 6px; padding: 8px;
-            }
-            QLineEdit:focus { border: 2px solid #6366f1; }
-            QPushButton {
-                background-color: #475569; color: white; border: none;
-                border-radius: 6px; padding: 10px; font-weight: bold;
-            }
-            QPushButton:hover { background-color: #64748b; }
-        """
 
     def _darken_color(self, hex_color, amount=20):
         """使颜色变暗"""
