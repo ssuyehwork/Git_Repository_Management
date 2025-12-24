@@ -102,9 +102,13 @@ class MainWindow(QMainWindow):
         self.profile_combo.currentTextChanged.connect(self.on_profile_changed)
 
         self.local_path_input = QLineEdit()
+        self.local_path_input.setPlaceholderText("例如: G:\\PYthon\\GitHub 仓库管理")
         self.remote_url_input = QLineEdit()
+        self.remote_url_input.setPlaceholderText("https://github.com/username/repo.git")
         self.username_input = QLineEdit()
+        self.username_input.setPlaceholderText("Git用户名 (可选)")
         self.email_input = QLineEdit()
+        self.email_input.setPlaceholderText("Git邮箱 (可选)")
 
         browse_btn = QPushButton("📂 浏览")
         browse_btn.setFixedWidth(100)
@@ -284,10 +288,14 @@ class MainWindow(QMainWindow):
 
     def smart_upload(self): self.execute_operation("upload")
     def smart_download(self): self.execute_operation("download")
-    def smart_sync(self): self.execute_operation("sync")
     def init_repo(self): self.execute_operation("init")
+
+    def smart_sync(self):
+        self.execute_operation("sync", "将执行双向同步操作:\n\n1. 保存本地更改\n2. 拉取远程更新\n3. 推送到远程\n\n确定继续吗?")
+
     def smart_overwrite(self):
         self.execute_operation("overwrite", "⚠ 警告: 这将用本地版本强制覆盖远程仓库！\n远程的更改将永久丢失！确定继续吗？")
+
     def smart_delete(self):
         text, ok = QInputDialog.getText(self, "⚠ 危险操作确认", "此操作不可恢复！\n请输入 'DELETE' 确认删除远程仓库所有文件:")
         if ok and text == "DELETE":
@@ -295,25 +303,27 @@ class MainWindow(QMainWindow):
 
     def auto_check_status(self):
         local_path = self.local_path_input.text()
-        status_widget = self.findChild(QWidget, "status_widget")
         if not local_path or not os.path.isdir(local_path):
             self.update_status_display("--", "--", "--", "路径无效")
             return
 
+        # 保存当前目录
+        original_dir = os.getcwd()
         try:
             os.chdir(local_path)
             if not os.path.exists(".git"):
                 self.update_status_display("--", "--", "--", "未初始化")
                 return
 
-            branch = subprocess.check_output(["git", "branch", "--show-current"]).strip().decode() or "main"
-            status = subprocess.check_output(["git", "status", "--porcelain"]).decode()
+            branch = subprocess.check_output(["git", "branch", "--show-current"], stderr=subprocess.STDOUT).strip().decode() or "main"
+            status = subprocess.check_output(["git", "status", "--porcelain"], stderr=subprocess.STDOUT).decode()
             uncommitted = len(status.strip().split('\n')) if status.strip() else 0
 
             try:
-                subprocess.check_output(["git", "rev-parse", "@{u}"]).strip().decode()
+                # 检查是否存在远程跟踪分支
+                subprocess.check_output(["git", "rev-parse", "@{u}"], stderr=subprocess.STDOUT).strip().decode()
                 unpushed_cmd = ["git", "rev-list", "@{u}..HEAD", "--count"]
-                unpushed = subprocess.check_output(unpushed_cmd).strip().decode()
+                unpushed = subprocess.check_output(unpushed_cmd, stderr=subprocess.STDOUT).strip().decode()
                 status_text = "✓ 已连接"
             except subprocess.CalledProcessError:
                 unpushed = "--"
@@ -323,6 +333,9 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.update_status_display("错误", "错误", "错误", "检查失败")
             self.log(f"状态检查失败: {e}", "error")
+        finally:
+            # 恢复原始目录
+            os.chdir(original_dir)
 
     def update_status_display(self, branch, uncommitted, unpushed, sync_status):
         self.branch_label.value_label.setText(branch)
