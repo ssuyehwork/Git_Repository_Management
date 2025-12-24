@@ -114,15 +114,37 @@ class MainWindow(QMainWindow):
         browse_btn.setFixedWidth(100)
         browse_btn.clicked.connect(self.browse_folder)
 
+        # 创建按钮
         new_btn = QPushButton("➕ 新建方案")
         update_btn = QPushButton("💾 更新方案")
         delete_btn = QPushButton("❌ 删除方案")
         refresh_btn = QPushButton("🔄 刷新状态")
+
+        # 定义通用样式模板
+        btn_style_template = """
+            QPushButton {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {color1}, stop:1 {color2});
+                color: white; font-weight: bold; padding: 8px 15px;
+                border-radius: 6px; font-size: 13px;
+            }}
+            QPushButton:hover {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {color2}, stop:1 {color3});
+            }}
+        """
+
+        # 应用不同颜色
+        new_btn.setStyleSheet(btn_style_template.format(color1="#10b981", color2="#059669", color3="#047857"))
+        update_btn.setStyleSheet(btn_style_template.format(color1="#3b82f6", color2="#2563eb", color3="#1d4ed8"))
+        delete_btn.setStyleSheet(btn_style_template.format(color1="#ef4444", color2="#dc2626", color3="#b91c1c"))
+        refresh_btn.setStyleSheet(btn_style_template.format(color1="#8b5cf6", color2="#7c3aed", color3="#6d28d9"))
+
+        # 连接信号
         new_btn.clicked.connect(self.create_new_profile)
         update_btn.clicked.connect(self.update_current_profile)
         delete_btn.clicked.connect(self.delete_current_profile)
         refresh_btn.clicked.connect(self.auto_check_status)
 
+        # 布局UI
         layout.addWidget(QLabel("📂 配置方案:"), 0, 0)
         layout.addWidget(self.profile_combo, 0, 1, 1, 2)
         layout.addWidget(QLabel("📁 本地路径:"), 1, 0)
@@ -136,8 +158,6 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.email_input, 4, 1, 1, 2)
 
         button_layout = QHBoxLayout()
-
-        # 将CRUD按钮分组
         crud_widget = QWidget()
         crud_layout = QHBoxLayout(crud_widget)
         crud_layout.setContentsMargins(0, 0, 0, 0)
@@ -146,12 +166,10 @@ class MainWindow(QMainWindow):
         crud_layout.addWidget(update_btn)
         crud_layout.addWidget(delete_btn)
 
-        # 添加按钮组和刷新按钮，并设置拉伸因子为1，使其平分空间
         button_layout.addWidget(crud_widget, 1)
         button_layout.addWidget(refresh_btn, 1)
 
         layout.addLayout(button_layout, 5, 0, 1, 3)
-
         group.setLayout(layout)
         return group
 
