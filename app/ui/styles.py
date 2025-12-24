@@ -46,6 +46,24 @@ def get_stylesheet():
         }
         QLineEdit:focus { border: 2px solid #6366f1; background-color: #3f4d63; }
         QLineEdit::placeholder { color: #64748b; }
+
+        QComboBox {
+            background-color: #334155;
+            color: #f1f5f9;
+            border: 2px solid #475569;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 12px;
+        }
+        QComboBox:focus {
+            border: 2px solid #6366f1;
+        }
+        QComboBox QAbstractItemView {
+            background-color: #334155;
+            color: #f1f5f9;
+            border: 1px solid #475569;
+            selection-background-color: #6366f1;
+        }
         /* 通用按钮样式，会被特定样式覆盖 */
         QPushButton {
             background-color: #475569; color: white; border: none;
