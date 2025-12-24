@@ -139,7 +139,6 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(new_btn)
         button_layout.addWidget(update_btn)
         button_layout.addWidget(delete_btn)
-        button_layout.addStretch(1)
         button_layout.addWidget(refresh_btn)
         layout.addLayout(button_layout, 5, 0, 1, 3)
 
