@@ -31,6 +31,7 @@ class MainWindow(QMainWindow):
         """初始化用户界面"""
         self.setWindowTitle("GitHub 仓库智能管理器 v3.0 (模块化版)")
         self.setGeometry(100, 100, 1100, 750)
+        self.setStyleSheet(self._get_stylesheet())
 
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -233,14 +234,182 @@ class MainWindow(QMainWindow):
         self.auto_check_status()
 
     def log(self, message, msg_type="info"):
-        # self.log_text.append(...)
-        pass
+        """添加日志条目到UI"""
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%H:%M:%S")
+
+        colors = {
+            "info": "#3b82f6",
+            "success": "#10b981",
+            "warning": "#f59e0b",
+            "error": "#ef4444"
+        }
+        color = colors.get(msg_type, "#cbd5e1")
+
+        html = f'<span style="color: #64748b;">[{timestamp}]</span> '
+        html += f'<span style="color: {color}; font-weight: bold;">{message}</span>'
+
+        self.log_text.append(html)
+
+        scrollbar = self.log_text.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
 
     def browse_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "选择本地仓库路径")
         if folder:
             self.local_path_input.setText(folder)
 
-    # ... 其他UI创建函数，如_create_status_group等，此处省略
-    def _create_log_group(self): return QGroupBox("📋 操作日志")
-    def _create_status_group(self): return QGroupBox("📊 仓库状态")
+    def _create_status_group(self):
+        """创建状态组"""
+        group = QGroupBox("📊 仓库状态")
+        group.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        layout = QGridLayout()
+        layout.setSpacing(6)
+        layout.setContentsMargins(8, 12, 8, 8)
+
+        self.branch_label = self._create_status_label("🌿 分支", "--", "#10b981")
+        self.uncommitted_label = self._create_status_label("📝 未提交", "--", "#f59e0b")
+        self.unpushed_label = self._create_status_label("📤 未推送", "--", "#3b82f6")
+        self.sync_label = self._create_status_label("🔗 状态", "--", "#8b5cf6")
+
+        layout.addWidget(self.branch_label, 0, 0)
+        layout.addWidget(self.uncommitted_label, 0, 1)
+        layout.addWidget(self.unpushed_label, 0, 2)
+        layout.addWidget(self.sync_label, 0, 3)
+
+        group.setLayout(layout)
+        return group
+
+    def _create_status_label(self, title, value, color):
+        """创建状态标签"""
+        widget = QWidget()
+        widget.setStyleSheet(f"""
+            QWidget {{
+                background-color: #1f2937;
+                border-left: 3px solid {color};
+                border-radius: 5px;
+                padding: 6px;
+            }}
+        """)
+
+        layout = QVBoxLayout(widget)
+        layout.setSpacing(2)
+        layout.setContentsMargins(6, 4, 6, 4)
+
+        title_label = QLabel(title)
+        title_label.setFont(QFont("Arial", 9))
+        title_label.setStyleSheet("color: #9ca3af;")
+
+        value_label = QLabel(value)
+        value_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        value_label.setStyleSheet(f"color: {color};")
+
+        layout.addWidget(title_label)
+        layout.addWidget(value_label)
+
+        widget.value_label = value_label
+        return widget
+
+    def _create_log_group(self):
+        """创建日志组"""
+        group = QGroupBox("📋 操作日志")
+        group.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        layout = QVBoxLayout()
+        layout.setContentsMargins(8, 12, 8, 8)
+
+        self.log_text = QTextEdit()
+        self.log_text.setReadOnly(True)
+        self.log_text.setMinimumHeight(130)
+        self.log_text.setMaximumHeight(150)
+        self.log_text.setFont(QFont("Consolas", 9))
+        self.log_text.setStyleSheet("""
+            QTextEdit {
+                background-color: #0f172a;
+                color: #e2e8f0;
+                border: 2px solid #1e293b;
+                border-radius: 8px;
+                padding: 10px;
+                font-family: 'Consolas', 'Courier New', monospace;
+            }
+        """)
+        layout.addWidget(self.log_text)
+
+        clear_btn = QPushButton("🧹 清空日志")
+        clear_btn.clicked.connect(self.log_text.clear)
+        layout.addWidget(clear_btn)
+
+        group.setLayout(layout)
+        return group
+
+    def _get_stylesheet(self):
+        """获取全局样式表"""
+        return """
+            QMainWindow {
+                background-color: #0f172a;
+            }
+            QGroupBox {
+                color: #f1f5f9;
+                border: 2px solid #334155;
+                border-radius: 10px;
+                margin-top: 8px;
+                padding-top: 18px;
+                background-color: #1e293b;
+                font-size: 14px;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 20px;
+                padding: 0 8px;
+                background-color: #1e293b;
+            }
+            QLabel {
+                color: #cbd5e1;
+                font-size: 13px;
+            }
+            QLineEdit {
+                background-color: #334155;
+                color: #f1f5f9;
+                border: 2px solid #475569;
+                border-radius: 6px;
+                padding: 8px;
+                font-size: 12px;
+                selection-background-color: #6366f1;
+            }
+            QLineEdit:focus {
+                border: 2px solid #6366f1;
+                background-color: #3f4d63;
+            }
+            QLineEdit::placeholder {
+                color: #64748b;
+            }
+            QPushButton {
+                background-color: #475569;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #64748b;
+            }
+            QPushButton:pressed {
+                background-color: #334155;
+            }
+            QPushButton:disabled {
+                background-color: #334155;
+                color: #64748b;
+            }
+            QStatusBar {
+                background-color: #1e293b;
+                color: #cbd5e1;
+            }
+        """
+
+    def _darken_color(self, hex_color, amount=20):
+        """使颜色变暗"""
+        color = QColor(hex_color)
+        h, s, l, a = color.getHsl()
+        color.setHsl(h, s, max(0, l - amount), a)
+        return color.name()
