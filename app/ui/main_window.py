@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import (
     QGridLayout, QMessageBox, QFileDialog, QProgressBar,
     QInputDialog, QSplashScreen
 )
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtCore import Qt, QTimer, QRect
+from PyQt6.QtGui import QFont, QColor, QPixmap
 
 from app.core.git_worker import GitWorker
 from app.core.config_manager import ConfigManager
@@ -163,17 +163,26 @@ class GitHubManager(QMainWindow):
 
     def _create_status_group(self):
         """创建状态组"""
-        group = QGroupBox("📊 仓库状态")
+        group = QGroupBox("仓库状态")
         group.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         layout = QGridLayout()
         layout.setSpacing(6)
         layout.setContentsMargins(8, 12, 8, 8)
 
+        # 定义雪碧图中的裁剪区域 (x, y, width, height)
+        # 这些值是根据 image.png 的布局估算的
+        icons_rects = {
+            "branch": QRect(20, 15, 40, 40),
+            "uncommitted": QRect(220, 15, 40, 40),
+            "unpushed": QRect(420, 15, 40, 40),
+            "status": QRect(620, 15, 40, 40)
+        }
+
         # 创建状态标签
-        self.branch_label = self._create_status_label("🌿 分支", "--", "#10b981")
-        self.uncommitted_label = self._create_status_label("📝 未提交", "--", "#f59e0b")
-        self.unpushed_label = self._create_status_label("📤 未推送", "--", "#3b82f6")
-        self.sync_label = self._create_status_label("🔗 状态", "--", "#8b5cf6")
+        self.branch_label = self._create_status_label("分支", "--", "#10b981", icons_rects["branch"])
+        self.uncommitted_label = self._create_status_label("未提交", "--", "#f59e0b", icons_rects["uncommitted"])
+        self.unpushed_label = self._create_status_label("未推送", "--", "#3b82f6", icons_rects["unpushed"])
+        self.sync_label = self._create_status_label("状态", "--", "#8b5cf6", icons_rects["status"])
 
         layout.addWidget(self.branch_label, 0, 0)
         layout.addWidget(self.uncommitted_label, 0, 1)
@@ -183,26 +192,44 @@ class GitHubManager(QMainWindow):
         group.setLayout(layout)
         return group
 
-    def _create_status_label(self, title, value, color):
-        """创建状态标签"""
+    def _create_status_label(self, title, value, color, icon_rect):
+        """创建带图标的状态标签"""
         widget = QWidget()
         widget.setObjectName("statusLabelWidget")
-        widget.setStyleSheet(f"border-left: 3px solid {color};")
 
-        layout = QVBoxLayout(widget)
-        layout.setSpacing(2)
-        layout.setContentsMargins(6, 4, 6, 4)
+        # 主布局
+        main_layout = QHBoxLayout(widget)
+        main_layout.setSpacing(5)
+        main_layout.setContentsMargins(10, 5, 10, 5)
+
+        # 1. 图标
+        icon_label = QLabel()
+        sprite_path = str(Path(__file__).parent / "icons" / "sprite.png")
+        full_pixmap = QPixmap(sprite_path)
+        icon_pixmap = full_pixmap.copy(icon_rect)
+        icon_label.setPixmap(icon_pixmap.scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        icon_label.setFixedSize(24, 24)
+
+        # 2. 文本内容垂直布局
+        text_layout = QVBoxLayout()
+        text_layout.setSpacing(0)
+        text_layout.setContentsMargins(0, 0, 0, 0)
 
         title_label = QLabel(title)
         title_label.setFont(QFont("Arial", 9))
 
         value_label = QLabel(value)
-        value_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        value_label.setFont(QFont("Arial", 11, QFont.Weight.Bold))
         value_label.setStyleSheet(f"color: {color}; background: transparent;")
         value_label.setObjectName("value")
 
-        layout.addWidget(title_label)
-        layout.addWidget(value_label)
+        text_layout.addWidget(title_label)
+        text_layout.addWidget(value_label)
+
+        # 组合
+        main_layout.addWidget(icon_label)
+        main_layout.addLayout(text_layout)
+        main_layout.addStretch() # 将所有内容推向左侧
 
         widget.value_label = value_label
         return widget
